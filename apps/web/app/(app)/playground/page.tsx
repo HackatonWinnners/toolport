@@ -19,6 +19,7 @@ import {
   type Quote,
   type Run,
 } from "@/lib/buyer";
+import { connectWallet as connectSigner } from "@/lib/signer";
 
 const TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
 
@@ -67,14 +68,10 @@ export default function AgentPage() {
   const connectWallet = async () => {
     setError(null);
     try {
-      const freighter = await import("@stellar/freighter-api");
-      if (!(await freighter.isConnected()).isConnected) throw new Error("Freighter is not installed. Get it at freighter.app");
-      const access = await freighter.requestAccess();
-      if (access.error) throw new Error(access.error.message ?? "Freighter access denied");
-      const details = await freighter.getNetworkDetails();
-      const wrongNetwork = NETWORK === "stellar:testnet" && details.networkPassphrase !== TESTNET_PASSPHRASE;
-      const account = await api<AccountStatus>(`/api/accounts/${access.address}`).catch(() => undefined);
-      setWallet({ address: access.address, account, wrongNetwork });
+      const { address, networkPassphrase } = await connectSigner();
+      const wrongNetwork = NETWORK === "stellar:testnet" && networkPassphrase !== TESTNET_PASSPHRASE;
+      const account = await api<AccountStatus>(`/api/accounts/${address}`).catch(() => undefined);
+      setWallet({ address, account, wrongNetwork });
     } catch (e) {
       setError((e as Error).message);
     }

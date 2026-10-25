@@ -8,6 +8,7 @@ import { x402MCPClient } from "@x402/mcp";
 import { getUsdcAddress } from "@x402/stellar";
 import { ExactStellarScheme } from "@x402/stellar/exact/client";
 import { NETWORK, type Server } from "./api";
+import { getSigner } from "./signer";
 
 const RPC_URL = process.env.NEXT_PUBLIC_STELLAR_RPC_URL ?? "https://soroban-testnet.stellar.org";
 const USDC = getUsdcAddress(NETWORK as `${string}:${string}`);
@@ -90,7 +91,7 @@ export function loadBudget(): Budget {
   } catch {
     // storage blocked: start fresh
   }
-  return { capUnits: toUnits("0.10"), perCallUnits: toUnits("0.05"), spentUnits: 0, runs: [] };
+  return { capUnits: toUnits("1.00"), perCallUnits: toUnits("0.05"), spentUnits: 0, runs: [] };
 }
 
 export function saveBudget(budget: Budget) {
@@ -129,35 +130,6 @@ export async function quote(tool: CatalogTool, args: Record<string, unknown>): P
   }
 }
 
-/**
- * Freighter's signAuthEntry signs the hash of the auth-entry preimage and hands back the raw signature
- * (https://developers.stellar.org/docs/build/guides/freighter/sign-auth-entries), sometimes as a Buffer
- * serialized to { type: "Buffer", data }. stellar-sdk's signAuthEntries wants that signature as base64.
- */
-function signatureToBase64(signed: unknown): string {
-  let bytes: Uint8Array;
-  if (typeof signed === "string") return signed;
-  if (signed instanceof Uint8Array) bytes = signed;
-  else if (signed && typeof signed === "object" && Array.isArray((signed as { data?: unknown }).data)) {
-    bytes = Uint8Array.from((signed as { data: number[] }).data);
-  } else throw new Error("Freighter returned an unexpected signature format");
-  if (bytes.length !== 64) throw new Error(`Freighter returned ${bytes.length} bytes, expected a 64-byte ed25519 signature`);
-  return btoa(String.fromCharCode(...bytes));
-}
-
-/** Freighter as an x402 Stellar signer: it signs the Soroban auth entry for the USDC transfer. */
-async function freighterSigner(address: string) {
-  const freighter = await import("@stellar/freighter-api");
-  return {
-    address,
-    signAuthEntry: async (preimageXdr: string, opts?: { networkPassphrase?: string }) => {
-      const signed = await freighter.signAuthEntry(preimageXdr, { networkPassphrase: opts?.networkPassphrase, address });
-      if (signed.error || !signed.signedAuthEntry) throw new Error(signed.error?.message ?? "Signature rejected in Freighter");
-      return { signedAuthEntry: signatureToBase64(signed.signedAuthEntry), signerAddress: signed.signerAddress };
-    },
-  };
-}
-
 /** Call a tool, paying with Freighter if it's priced, but never above the budget. */
 export async function invoke(
   tool: CatalogTool,
@@ -167,7 +139,7 @@ export async function invoke(
 ): Promise<Omit<Run, "id" | "at" | "tool" | "args">> {
   let approvedUnits = 0;
   let denial: string | null = null;
-  const payments = new x402Client().register(NETWORK as `${string}:${string}`, new ExactStellarScheme(await freighterSigner(address), { url: RPC_URL }));
+  const payments = new x402Client().register(NETWORK as `${string}:${string}`, new ExactStellarScheme(await getSigner(address), { url: RPC_URL }));
   const mcp = new x402MCPClient(new Client({ name: "stellarpay-web", version: "0.1.0" }), payments, {
     autoPayment: true,
     onPaymentRequested: ({ paymentRequired }) => {

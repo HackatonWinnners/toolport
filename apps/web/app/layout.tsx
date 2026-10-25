@@ -1,23 +1,20 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import type { ReactNode } from "react";
-import { Header } from "@/components/Header";
-import { SessionProvider } from "@/lib/session";
 import "./globals.css";
 
+const sans = Geist({ subsets: ["latin"], variable: "--font-geist-sans" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
+
 export const metadata: Metadata = {
-  title: "StellarPay MCP",
-  description: "Pay-per-call MCP tools, settled in USDC on Stellar",
+  title: "Toolport",
+  description: "Your agent can buy the tools it needs: pay-per-call MCP tools, settled in USDC on Stellar",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen font-sans antialiased">
-        <SessionProvider>
-          <Header />
-          <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
-        </SessionProvider>
-      </body>
+    <html lang="en" className={`${sans.variable} ${mono.variable}`}>
+      <body className="min-h-screen bg-ink font-sans text-fg antialiased">{children}</body>
     </html>
   );
 }

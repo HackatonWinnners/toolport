@@ -3,6 +3,10 @@ export const NETWORK = process.env.NEXT_PUBLIC_STELLAR_NETWORK ?? "stellar:testn
 export const EXPLORER = NETWORK === "stellar:pubnet"
   ? "https://stellar.expert/explorer/public"
   : "https://stellar.expert/explorer/testnet";
+export const DOCS_URL = process.env.NEXT_PUBLIC_DOCS_URL || null;
+export const REPO_URL = process.env.NEXT_PUBLIC_REPO_URL || null;
+export const FAUCET_URL = "https://faucet.circle.com";
+export const txUrl = (hash: string) => `${EXPLORER}/tx/${hash}`;
 
 export interface Tool {
   name: string;
@@ -81,38 +85,28 @@ export const usd = (value: string | number) => {
 export const short = (address: string) => `${address.slice(0, 4)}…${address.slice(-4)}`;
 
 /**
- * The `stellarpay` npm name isn't ours yet, so never suggest `npx stellarpay`: whoever registers
- * it would run next to the agent's wallet secret. Point NEXT_PUBLIC_CLI_PATH at a checkout's
- * packages/cli/bin/stellarpay.js; set NEXT_PUBLIC_CLI_NPM=true once the package is published.
+ * The `stellarpay` npm name isn't ours yet, so never suggest `npx stellarpay` by default: whoever
+ * registers it would run next to the agent's wallet secret. NEXT_PUBLIC_CLI_PATH points at a
+ * checkout's packages/cli/bin/stellarpay.js; NEXT_PUBLIC_CLI_NPM=true once the package is published.
+ * Otherwise the snippet runs `toolport`, which `npm link -w packages/cli` puts on the PATH.
  */
-const CLI_PATH = process.env.NEXT_PUBLIC_CLI_PATH ?? "/absolute/path/to/stellarpay-mcp/packages/cli/bin/stellarpay.js";
+const CLI_PATH = process.env.NEXT_PUBLIC_CLI_PATH;
 const CLI_NPM = process.env.NEXT_PUBLIC_CLI_NPM === "true";
+
+function cliCommand(args: string[]) {
+  if (CLI_PATH) return { command: "node", args: [CLI_PATH, ...args] };
+  if (CLI_NPM) return { command: "npx", args: ["-y", "stellarpay", ...args] };
+  return { command: "toolport", args };
+}
 
 export function claudeDesktopConfig(urls: string[]) {
   const bridgeArgs = ["connect", "--urls", urls.join(","), "--max-per-call", "0.05", "--budget", "1"];
-  return JSON.stringify(
-    {
-      mcpServers: {
-        stellarpay: CLI_NPM
-          ? { command: "npx", args: ["-y", "stellarpay", ...bridgeArgs] }
-          : { command: "node", args: [CLI_PATH, ...bridgeArgs] },
-      },
-    },
-    null,
-    2,
-  );
+  return JSON.stringify({ mcpServers: { toolport: cliCommand(bridgeArgs) } }, null, 2);
 }
 
 /** Claude Desktop config for the discovery router: one MCP for every tool in the catalog, under a budget. */
-export function routerConfig() {
-  const args = ["router", "--max-per-call", "0.05", "--budget", "1", "--session", "claude"];
-  return JSON.stringify(
-    {
-      mcpServers: {
-        stellarpay: CLI_NPM ? { command: "npx", args: ["-y", "stellarpay", ...args] } : { command: "node", args: [CLI_PATH, ...args] },
-      },
-    },
-    null,
-    2,
-  );
+export function routerConfig(): string {
+  const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(GATEWAY_URL);
+  const args = ["router", "--gateway", GATEWAY_URL, ...(local ? ["--allow-local"] : []), "--max-per-call", "0.05", "--budget", "1", "--session", "claude"];
+  return JSON.stringify({ mcpServers: { toolport: cliCommand(args) } }, null, 2);
 }
