@@ -1,0 +1,20 @@
+{
+  "name": "@stellarpay/demo-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Stellar Oracle: a demo MCP server with free and paid Stellar data tools",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=.env src/index.ts",
+    "start": "tsx --env-file-if-exists=.env src/index.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.5",
+    "@stellar/stellar-sdk": "^16.3.0",
+    "@stellarpay/core": "0.1.0",
+    "@stellarpay/mcp": "0.1.0",
+    "hono": "^4.13.13",
+    "zod": "^3.25.76"
+  }
+}
