@@ -203,9 +203,9 @@ toolport budget --release <hold-id> # you checked the wallet: this one was never
 
 SDK users can opt into `store` and `verifyReceipts: true`. Otherwise the SDK keeps an in-memory session and trusts the provider's receipt. These are client-side limits, not on-chain smart-account policies.
 
-### External HTTP API examples (mainnet only)
+### MPP Router APIs (mainnet only)
 
-[`catalog/mpprouter.mainnet.json`](catalog/mpprouter.mainnet.json) holds curated Exa search and Firecrawl scrape descriptors. It is opt-in and filtered out on testnet:
+[`catalog/mpprouter.mainnet.json`](catalog/mpprouter.mainnet.json) lists the 448 payable APIs from [MPP Router](https://apiserver.mpprouter.dev)'s catalog: search, LLMs, market data, maps, scraping and more. The web catalog shows the same list. Exa search and Firecrawl scrape have exact input schemas; the rest accept the router's generic `query`/`body` arguments, with each entry's `docs` link and `priceHint`. It is opt-in and filtered out on testnet:
 
 ```bash
 # Explicit mainnet configuration; use a dedicated funded wallet and a mainnet RPC.
@@ -214,7 +214,9 @@ STELLAR_RPC_URL=https://YOUR_MAINNET_RPC toolport router \
   --max-per-call 0.01 --budget 0.10 --session web-research
 ```
 
-When you configure a desktop MCP client, pass an absolute manifest path. HTTP arguments go in `args.body`, `args.query` and `args.pathParams`. MCP arguments go directly to the tool. Prices come from fresh exact USDC x402 challenges, not from catalog strings. MPP sessions and channels are not implemented; these examples use Router's x402 interface. This project hasn't tested paid delivery on mainnet. Don't import every catalog entry as a supported tool.
+When you configure a desktop MCP client, pass an absolute manifest path. HTTP arguments go in `args.body`, `args.query` and `args.pathParams`. MCP arguments go directly to the tool. Prices come from fresh exact USDC x402 challenges, not from catalog strings. MPP sessions and channels are not implemented; these examples use Router's x402 interface. This project hasn't tested paid delivery on mainnet; MPP Router itself has verified 27 of these with real paid runs (marked in the web catalog).
+
+Regenerate both lists from a newer catalog snapshot with `node scripts/import-mpprouter.mjs [snapshot.json]`.
 
 Provider requests validate and pin DNS addresses, reject private networks and redirects, and use bounded responses and timeouts. `--allow-local` turns on loopback for development; it does not allow arbitrary private subnets.
 

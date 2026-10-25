@@ -121,8 +121,8 @@ export function Catalog() {
         <div className="flex max-w-[640px] flex-col gap-3.5">
           <H2 id="cat-h">Tools from a cent a call.</H2>
           <p className="m-0 text-[17px] leading-[1.6] text-fg-soft">
-            Every tool in the Toolport registry, searched through one connection, with the price before every
-            call.
+            The Toolport registry, plus 448 paid APIs from MPP Router on Stellar mainnet: search, LLMs, market data
+            and more. One connection, the price before every call.
           </p>
         </div>
         <Link href="/catalog" className={`${ghost} h-11 px-[18px] text-[15px]`}>

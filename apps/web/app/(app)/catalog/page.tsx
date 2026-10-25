@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { MppCatalog } from "@/components/catalog/MppCatalog";
 import { Code, ErrorNote, UrlRow } from "@/components/ui";
 import { api, claudeDesktopConfig, short, usd, type Server } from "@/lib/api";
 
@@ -48,7 +49,7 @@ export default function CatalogPage() {
       <input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Search servers and tools"
+        placeholder="Search servers, tools and APIs"
         aria-label="Search servers and tools"
         className="w-full rounded-[10px] border border-line-strong bg-panel px-4 py-2.5 text-sm text-fg placeholder:text-faint focus:border-good focus:outline-none"
       />
@@ -126,6 +127,8 @@ export default function CatalogPage() {
           </article>
         ))}
       </div>
+
+      <MppCatalog query={query} />
     </div>
   );
 }
