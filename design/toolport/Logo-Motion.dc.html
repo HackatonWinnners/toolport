@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Toolport — Logo motion</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#7FD3AB}a:hover{color:#F1EEE6}
+.tpm :focus-visible{outline:2px solid #5CC395;outline-offset:3px}
+@keyframes tpm-a{0%,18%{transform:translateX(9px);animation-timing-function:cubic-bezier(.65,0,.35,1)}50%,86%{transform:none;animation-timing-function:cubic-bezier(.65,0,.35,1)}97%,100%{transform:translateX(9px)}}
+@keyframes tpm-b{0%,18%{transform:translateX(-9px);animation-timing-function:cubic-bezier(.65,0,.35,1)}50%,86%{transform:none;animation-timing-function:cubic-bezier(.65,0,.35,1)}97%,100%{transform:translateX(-9px)}}
+@keyframes tpm-l{0%,49%{opacity:0}52%,84%{opacity:1}86%,100%{opacity:0}}
+@keyframes tpm-w{0%,30%{opacity:0;transform:translateX(-14px)}48%,84%{opacity:1;transform:none}93%,100%{opacity:0;transform:translateX(-14px)}}
+.tpm-A{animation:tpm-a 3.6s linear infinite}
+.tpm-B{animation:tpm-b 3.6s linear infinite}
+.tpm-L{animation:tpm-l 3.6s linear infinite}
+.tpm-W{animation:tpm-w 3.6s cubic-bezier(.2,.7,.2,1) infinite}
+.tpm-paused .tpm-A,.tpm-paused .tpm-B,.tpm-paused .tpm-L,.tpm-paused .tpm-W{animation-play-state:paused}
+.tpm-btn:hover{background:#FFFFFF}
+@media (prefers-reduced-motion: reduce){.tpm-respect .tpm-A,.tpm-respect .tpm-B,.tpm-respect .tpm-L,.tpm-respect .tpm-W{animation:none !important}}
+</style>
+</helmet>
+<div class="tpm {{motionCls}} {{pauseCls}}" style="width: 1040px; height: 640px; box-sizing: border-box; background: #1B1A17; color: #F1EEE6; font-family: Geist, system-ui, sans-serif; padding: 44px 56px 44px; display: flex; flex-direction: column; justify-content: space-between">
+  <div style="display: flex; justify-content: space-between; align-items: baseline; font-family: 'Geist Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 0.06em; color: #A8A396; text-transform: uppercase">
+    <span>Logo motion · looping preview</span>
+    <span>On the site it plays once, 1.4 s</span>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: center; gap: 30px">
+    <svg width="196" height="140" viewBox="0 0 56 40" role="img" aria-label="Toolport mark: one ring splits into two linked rings">
+      <circle class="tpm-A" cx="19" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle>
+      <circle class="tpm-B" cx="37" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle>
+      <g class="tpm-L">
+        <path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#1B1A17" stroke-width="9"></path>
+        <path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#F1EEE6" stroke-width="5"></path>
+        <path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#1B1A17" stroke-width="9"></path>
+        <path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#F1EEE6" stroke-width="5"></path>
+      </g>
+    </svg>
+    <span class="tpm-W" style="font-size: 124px; font-weight: 600; letter-spacing: -0.06em; line-height: 0.9; padding-bottom: 12px">toolport</span>
+  </div>
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+    <ol aria-label="Storyboard" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 12px">
+      <li style="width: 150px; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #24231F; border: 1px solid #36342E">
+        <svg width="70" height="50" viewBox="0 0 56 40" aria-hidden="true"><circle cx="28" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle></svg>
+        <span style="font-size: 13px; color: #C9C4B6">0.0 s · one port</span>
+      </li>
+      <li style="width: 150px; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #24231F; border: 1px solid #36342E">
+        <svg width="70" height="50" viewBox="0 0 56 40" aria-hidden="true"><circle cx="23.5" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle><circle cx="32.5" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle></svg>
+        <span style="font-size: 13px; color: #C9C4B6">0.9 s · it opens</span>
+      </li>
+      <li style="width: 150px; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 16px; background: #24231F; border: 1px solid #36342E">
+        <svg width="70" height="50" viewBox="0 0 56 40" aria-hidden="true"><circle cx="19" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle><circle cx="37" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#24231F" stroke-width="9"></path><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#F1EEE6" stroke-width="5"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#24231F" stroke-width="9"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#F1EEE6" stroke-width="5"></path></svg>
+        <span style="font-size: 13px; color: #C9C4B6">1.4 s · linked</span>
+      </li>
+    </ol>
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px">
+      <button type="button" class="tpm-btn" onClick="{{togglePause}}" aria-pressed="{{pausedStr}}" style="height: 44px; min-width: 112px; padding: 0 18px; border-radius: 12px; border: 0; background: #F1EEE6; color: #1B1A17; font: inherit; font-size: 15px; font-weight: 500; cursor: pointer">{{pauseLabel}}</button>
+      <span style="font-size: 12px; color: #A8A396">Motion tweak: always, or follow the system's reduced-motion setting.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"motion":{"editor":"enum","options":["always","follow system"],"default":"always"},"$preview":{"width":1040,"height":640}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const paused = !!(this.state && this.state.paused);
+    const motion = this.props.motion ?? 'always';
+    return {
+      motionCls: motion === 'always' ? '' : 'tpm-respect',
+      pauseCls: paused ? 'tpm-paused' : '',
+      pausedStr: paused ? 'true' : 'false',
+      pauseLabel: paused ? 'Play' : 'Pause',
+      togglePause: () => this.setState({ paused: !paused })
+    };
+  }
+}
+</script>
+</body>
+</html>

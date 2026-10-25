@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Toolport — Landing</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1B1A17}
+a{color:#F1EEE6}a:hover{color:#7FD3AB}
+.tpx :focus-visible{outline:2px solid #5CC395;outline-offset:3px}
+.tpx summary{list-style:none;cursor:pointer}
+.tpx summary::-webkit-details-marker{display:none}
+.tpx details[open] .tpx-plus{transform:rotate(45deg)}
+.tpx-plus{transition:transform .2s ease}
+.tpx-cta:hover{background:#FFFFFF}
+.tpx-ghost:hover{background:#2A2925}
+.tpx-card:hover{border-color:#4A473F}
+.tpx-nav a:hover{color:#F1EEE6}
+
+/* logo: one ring splits into two, then links */
+@keyframes tpl-a{from{transform:translateX(9px)}to{transform:none}}
+@keyframes tpl-b{from{transform:translateX(-9px)}to{transform:none}}
+@keyframes tpl-l{from{opacity:0}to{opacity:1}}
+.tpl-A{animation:tpl-a 1.1s cubic-bezier(.65,0,.35,1) .3s both}
+.tpl-B{animation:tpl-b 1.1s cubic-bezier(.65,0,.35,1) .3s both}
+.tpl-L{animation:tpl-l .18s linear 1.28s both}
+@supports (animation-timeline: view()){
+  .tpx-scroll .tpl-A,.tpx-scroll .tpl-B{animation-timeline:view();animation-range:entry 40% cover 42%;animation-delay:0s;animation-duration:auto}
+  .tpx-scroll .tpl-L{animation-timeline:view();animation-range:cover 41% cover 44%;animation-delay:0s;animation-duration:auto}
+}
+
+@keyframes tpx-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes tpx-dots{0%,80%,100%{opacity:.25}40%{opacity:1}}
+@keyframes tpx-fill{from{width:0}to{width:100%}}
+.tpx-in{animation:tpx-in .6s cubic-bezier(.2,.7,.2,1) both}
+.tpx-dot{animation:tpx-dots 1.2s ease-in-out infinite}
+
+/* how it works: each step owns its slice of the timeline */
+@keyframes tpx-sweep{from{transform:translateX(-100%)}to{transform:translateX(340%)}}
+.tpx-fill{background:#4A9F78;animation-name:tpx-fill;animation-timing-function:linear;animation-fill-mode:both}
+.tpx-d0{animation-duration:1.2s}.tpx-d1{animation-duration:1.2s}.tpx-d2{animation-duration:1.4s}
+.tpx-d3{animation-duration:1.6s}.tpx-d4{animation-duration:4s}.tpx-d5{animation-duration:2.2s}
+.tpx-pulse{position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,rgba(201,242,220,0),rgba(201,242,220,.4),rgba(201,242,220,0));animation:tpx-sweep 1.6s cubic-bezier(.45,0,.55,1) infinite}
+.tpx-paused .tpx-fill,.tpx-paused .tpx-pulse{animation-play-state:paused}
+.tpx-step{background:#201F1B;border-color:#2E2C27;color:#F1EEE6;transition:background .3s ease,border-color .3s ease}
+.tpx-step .tpx-step-n,.tpx-step .tpx-step-meta,.tpx-step .tpx-step-body{color:#A8A396}
+.tpx-step:hover{border-color:#5A564D}
+.tpx-step.is-done{background:#24231F;border-color:#36342E}
+.tpx-step.is-done .tpx-step-body{color:#C9C4B6}
+.tpx-step.is-active{background:#2A2925;border-color:#3F7A5C}
+.tpx-step.is-active .tpx-step-body{color:#F1EEE6}
+.tpx-step.is-active .tpx-step-meta{color:#F1EEE6}
+.tpx-step.is-active.is-final{background:#1F2B24;border-color:#3F7A5C}
+.tpx-step.is-active.is-final .tpx-step-n,.tpx-step.is-active.is-final .tpx-step-meta{color:#7FD3AB}
+@media (prefers-reduced-motion: reduce){.tpx-respect .tpl-A,.tpx-respect .tpl-B,.tpx-respect .tpl-L,.tpx-respect .tpx-in,.tpx-respect .tpx-dot{animation:none !important}.tpx-respect .tpx-fill{animation:none !important;width:100%}.tpx-respect .tpx-pulse{display:none}.tpx-respect .tpx-step{transition:none}}
+</style>
+</helmet>
+<div class="tpx {{motionCls}}" style="font-family: Geist, system-ui, sans-serif; color: #F1EEE6; background: #1B1A17; min-height: 5400px">
+
+  <!-- Nav -->
+  <header style="position: sticky; top: 0; z-index: 10; background: rgba(27, 26, 23, 0.86); backdrop-filter: blur(12px); border-bottom: 1px solid #2A2925">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <a href="#" aria-label="Toolport home" style="display: flex; align-items: center; gap: 9px; font-size: 22px; font-weight: 600; letter-spacing: -0.055em; text-decoration: none; line-height: 1; color: #F1EEE6">
+        <svg width="36" height="26" viewBox="0 0 56 40" aria-hidden="true"><circle class="tpl-A" cx="19" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5.5"></circle><circle class="tpl-B" cx="37" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5.5"></circle><g class="tpl-L"><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#1B1A17" stroke-width="10"></path><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#F1EEE6" stroke-width="5.5"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#1B1A17" stroke-width="10"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#F1EEE6" stroke-width="5.5"></path></g></svg>
+        toolport
+      </a>
+      <nav aria-label="Primary" class="tpx-nav" style="display: flex; gap: 26px; font-size: 14px; flex-wrap: wrap">
+        <a href="#how" style="text-decoration: none; color: #C9C4B6">How it works</a>
+        <a href="#proof" style="text-decoration: none; color: #C9C4B6">Proof</a>
+        <a href="#catalog" style="text-decoration: none; color: #C9C4B6">Catalog</a>
+        <a href="#sell" style="text-decoration: none; color: #C9C4B6">For sellers</a>
+        <a href="#" style="text-decoration: none; color: #C9C4B6">Docs</a>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="font-size: 12.5px; color: #A8A396; display: inline-flex; align-items: center; gap: 6px"><span style="width: 6px; height: 6px; border-radius: 50%; background: #8DB0EC"></span>Stellar testnet</span>
+        <a href="#" class="tpx-cta" style="display: inline-flex; align-items: center; height: 40px; padding: 0 16px; border-radius: 12px; background: #F1EEE6; color: #1B1A17; font-size: 14px; font-weight: 500; text-decoration: none">Open the app</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section aria-label="Introduction" style="max-width: 1200px; margin: 0 auto; padding: 72px 24px 40px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 56px; align-items: center">
+    <div style="flex: 1 1 460px; display: flex; flex-direction: column; gap: 26px">
+      <h1 style="margin: 0; font-weight: 600; font-size: clamp(42px, 5.4vw, 74px); line-height: 1.02; letter-spacing: -0.05em">Your agent can buy the tools it needs.<br><span style="color: #8C877B">Never more than you allow.</span></h1>
+      <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #C9C4B6; max-width: 520px">One MCP connection to find paid tools, hear the exact price before anything is signed, and pay per call in USDC on Stellar. Every purchase comes back with an on-chain receipt.</p>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap">
+        <a href="#" class="tpx-cta" style="display: inline-flex; align-items: center; height: 52px; padding: 0 22px; border-radius: 14px; background: #F1EEE6; color: #1B1A17; font-size: 16px; font-weight: 500; text-decoration: none">Try it in the browser</a>
+        <a href="#connect" class="tpx-ghost" style="display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 22px; border-radius: 14px; border: 1px solid #45423B; color: #F1EEE6; font-size: 16px; font-weight: 500; text-decoration: none">Connect your agent
+          <span style="font-family: 'Geist Mono', monospace; font-size: 12.5px; color: #A8A396">toolport router</span>
+        </a>
+      </div>
+      <ul style="list-style: none; margin: 8px 0 0; padding: 0; display: flex; gap: 22px; flex-wrap: wrap; font-size: 14px; color: #C9C4B6">
+        <li>No API keys</li>
+        <li>No subscriptions</li>
+        <li>No XLM needed for fees</li>
+      </ul>
+    </div>
+
+    <figure aria-label="A conversation: the agent asks, Toolport quotes and pays, the agent answers" style="flex: 1 1 460px; margin: 0; background: #24231F; border: 1px solid #36342E; border-radius: 26px; padding: 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 30px 60px -36px rgba(0, 0, 0, 0.6)">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px; color: #A8A396; padding-bottom: 6px; border-bottom: 1px solid #2E2C27">
+        <span style="display: inline-flex; align-items: center; gap: 7px"><span style="width: 7px; height: 7px; border-radius: 50%; background: #5CC395"></span>Claude · connected to Toolport</span>
+        <span style="font-family: 'Geist Mono', monospace">$0.979 of $1.00 left</span>
+      </div>
+      <div class="tpx-in" style="align-self: flex-end; max-width: 80%; background: #34322C; border-radius: 18px 18px 6px 18px; padding: 12px 16px; font-size: 15px; line-height: 1.45; animation-delay: .4s">What's the best way to swap 100 XLM for USDC right now?</div>
+      <div class="tpx-in" style="display: flex; align-items: center; gap: 8px; font-family: 'Geist Mono', monospace; font-size: 12px; color: #A8A396; animation-delay: 1s">
+        <span>toolport.search</span><span style="color: #6E6A60">→</span><span>dex_best_path</span>
+      </div>
+      <div class="tpx-in" style="border: 1px solid #36342E; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #2A2925; animation-delay: 1.5s">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #A8A396">Quote</span>
+          <span style="font-family: 'Geist Mono', monospace; font-size: 14px; font-weight: 500">dex_best_path</span>
+          <span style="font-size: 13px; color: #A8A396">Stellar Oracle</span>
+          <span style="margin-left: auto; font-size: 22px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums">$0.02</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #7FD3AB">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 2.5 4v4c0 3.2 2.4 5.6 5.5 6.5 3.1-.9 5.5-3.3 5.5-6.5V4z"></path><path d="m5.5 8 1.8 1.8L10.5 6.5"></path></svg>
+          Under your $0.05 per-call cap. Checked before signing.
+        </div>
+      </div>
+      <div class="tpx-in" style="border-radius: 16px; padding: 14px 16px; background: #1F2B24; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13.5px; animation-delay: 2.2s">
+        <span style="width: 9px; height: 9px; border-radius: 50%; background: #5CC395"></span>
+        <span>Paid <strong style="font-family: 'Geist Mono', monospace; font-weight: 500">$0.02</strong> USDC. Settled on Stellar.</span>
+        <a href="#" style="margin-left: auto; font-family: 'Geist Mono', monospace; font-size: 12.5px; color: #7FD3AB">b3168b85…6efb76 ↗</a>
+      </div>
+      <div class="tpx-in" style="font-size: 18px; line-height: 1.5; letter-spacing: -0.01em; padding: 4px 2px 0; animation-delay: 2.8s">Route it through XLM → USDC: 100 XLM gets you <strong style="font-weight: 600">87.46 USDC</strong>, at a rate of 0.8746.</div>
+      <div aria-hidden="true" style="display: flex; gap: 4px; padding-left: 2px">
+        <span class="tpx-dot" style="width: 5px; height: 5px; border-radius: 50%; background: #8C877B"></span>
+        <span class="tpx-dot" style="width: 5px; height: 5px; border-radius: 50%; background: #8C877B; animation-delay: .2s"></span>
+        <span class="tpx-dot" style="width: 5px; height: 5px; border-radius: 50%; background: #8C877B; animation-delay: .4s"></span>
+      </div>
+    </figure>
+  </section>
+
+  <section aria-label="What the agent can count on" style="max-width: 1200px; margin: 0 auto; padding: 24px 24px 24px; box-sizing: border-box">
+    <ul style="list-style: none; margin: 0; padding: 24px 0 0; border-top: 1px solid #36342E; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px">
+      <li style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.025em">The price, before anything is signed.</span><span style="font-size: 14px; color: #A8A396; line-height: 1.5">Over-cap calls are refused with no transaction.</span></li>
+      <li style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.025em">A budget that holds.</span><span style="font-size: 14px; color: #A8A396; line-height: 1.5">Across restarts and parallel calls. Unknown outcomes stay held.</span></li>
+      <li style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.025em">Never paid twice.</span><span style="font-size: 14px; color: #A8A396; line-height: 1.5">The same request returns the stored result.</span></li>
+      <li style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 17px; font-weight: 600; letter-spacing: -0.025em">A receipt for every call.</span><span style="font-size: 14px; color: #A8A396; line-height: 1.5">Verified on-chain, linked to Stellar Expert.</span></li>
+    </ul>
+  </section>
+
+  <!-- How it works -->
+  <section id="how" aria-labelledby="how-h" style="max-width: 1200px; margin: 0 auto; padding: 112px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 720px">
+      <h2 id="how-h" style="margin: 0; font-size: clamp(32px, 4vw, 52px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">Six steps, about ten seconds, one receipt.</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9C4B6">Your agent never sees a key or a checkout page. It asks, gets a price, and Toolport handles the rest inside the limits you set.</p>
+    </div>
+
+    <div class="{{pauseCls}}" style="display: flex; flex-direction: column; gap: 16px">
+      <ol aria-label="Steps of a paid call" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px">
+        <sc-for list="{{steps}}" as="step" hint-placeholder-count="6">
+          <li style="display: flex; flex-direction: column; gap: 12px">
+            <div aria-hidden="true" style="position: relative; height: 3px; border-radius: 999px; background: #36342E; overflow: hidden">
+              <sc-if value="{{step.done}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 999px; background: #6E6A60"></span></sc-if>
+              <sc-if value="{{step.active}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: 0; top: 0; bottom: 0; width: 100%; border-radius: 999px; background: #24382D"></span><span class="tpx-fill tpx-d{{step.idx}}" style="position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px"></span><span class="tpx-pulse"></span></sc-if>
+            </div>
+            <button type="button" class="tpx-step {{step.stateCls}}" onClick="{{step.pick}}" aria-current="{{step.current}}" style="flex: 1; width: 100%; box-sizing: border-box; text-align: left; font: inherit; border-radius: 18px; border-width: 1px; border-style: solid; padding: 18px; display: flex; flex-direction: column; gap: 10px; cursor: pointer">
+              <span class="tpx-step-n" style="font-family: 'Geist Mono', monospace; font-size: 12px">{{step.n}}</span>
+              <span style="font-size: 18px; font-weight: 600; letter-spacing: -0.03em">{{step.title}}</span>
+              <span class="tpx-step-body" style="font-size: 14px; line-height: 1.5">{{step.body}}</span>
+              <span class="tpx-step-meta" style="margin-top: auto; font-family: 'Geist Mono', monospace; font-size: 12px">{{step.meta}}</span>
+            </button>
+          </li>
+        </sc-for>
+      </ol>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap">
+        <span style="font-family: 'Geist Mono', monospace; font-size: 12.5px; color: #A8A396">{{activeN}} / 06 · {{activeTitle}}</span>
+        <button type="button" onClick="{{togglePause}}" aria-pressed="{{pausedStr}}" class="tpx-ghost" style="height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid #45423B; background: transparent; color: #F1EEE6; font: inherit; font-size: 13px; cursor: pointer">{{pauseLabel}}</button>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 16px 18px; border-radius: 16px; border: 1px dashed #45423B; font-size: 14px; color: #C9C4B6">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="#F1EEE6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 2 3.5 4.8v4.6c0 3.8 2.8 6.6 6.5 7.6 3.7-1 6.5-3.8 6.5-7.6V4.8z"></path><path d="M7 10h6"></path></svg>
+      <span><strong style="color: #F1EEE6; font-weight: 600">Over the cap?</strong> It stops at step 02. Nothing is signed and no transaction is sent.</span>
+    </div>
+  </section>
+
+  <!-- Proof -->
+  <section id="proof" aria-labelledby="proof-h" style="max-width: 1200px; margin: 0 auto; padding: 112px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 640px">
+        <h2 id="proof-h" style="margin: 0; font-size: clamp(32px, 4vw, 52px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">Don't take our word for it. Open the receipts.</h2>
+      </div>
+      <span style="font-size: 15px; line-height: 1.5; color: #A8A396; max-width: 360px">Real payments on Stellar testnet. Refusals and repeats are logged too.</span>
+    </div>
+
+    <div style="overflow-x: auto; border: 1px solid #36342E; border-radius: 20px; background: #24231F">
+      <table style="width: 100%; min-width: 760px; border-collapse: collapse; font-size: 14px">
+        <thead>
+          <tr style="text-align: left; color: #A8A396; font-size: 12px">
+            <th scope="col" style="padding: 14px 20px; font-weight: 500; border-bottom: 1px solid #36342E">Status</th>
+            <th scope="col" style="padding: 14px 20px; font-weight: 500; border-bottom: 1px solid #36342E">Amount</th>
+            <th scope="col" style="padding: 14px 20px; font-weight: 500; border-bottom: 1px solid #36342E">Tool</th>
+            <th scope="col" style="padding: 14px 20px; font-weight: 500; border-bottom: 1px solid #36342E">What happened</th>
+            <th scope="col" style="padding: 14px 20px; font-weight: 500; border-bottom: 1px solid #36342E; text-align: right">Transaction</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5CC395"></span>Settled</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; font-family: 'Geist Mono', monospace">$0.001</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27">Current weather <span style="color: #A8A396">· Rail402</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; color: #C9C4B6">Lisbon: 21°, sunny</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; text-align: right"><a href="#" style="font-family: 'Geist Mono', monospace; font-size: 13px; color: #7FD3AB">9d1d9665…886be ↗</a></td>
+          </tr>
+          <tr>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5CC395"></span>Settled</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; font-family: 'Geist Mono', monospace">$0.02</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27"><span style="font-family: 'Geist Mono', monospace">dex_best_path</span> <span style="color: #A8A396">· Stellar Oracle</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; color: #C9C4B6">100 XLM → 87.46 USDC</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; text-align: right"><a href="#" style="font-family: 'Geist Mono', monospace; font-size: 13px; color: #7FD3AB">b3168b85…6efb76 ↗</a></td>
+          </tr>
+          <tr>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5CC395"></span>Settled</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; font-family: 'Geist Mono', monospace; color: #A8A396">[amount]</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; color: #A8A396">[tool]</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; color: #A8A396">[result]</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; text-align: right"><a href="#" style="font-family: 'Geist Mono', monospace; font-size: 13px; color: #7FD3AB">c31160c7…364d77 ↗</a></td>
+          </tr>
+          <tr style="background: #201F1B">
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid #F1EEE6; box-sizing: border-box"></span>Refused</span></td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; font-family: 'Geist Mono', monospace">$0.10</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27">A quote over the cap</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; color: #C9C4B6">Over the $0.05 per-call cap, caught before signing</td>
+            <td style="padding: 16px 20px; border-bottom: 1px solid #2E2C27; text-align: right; color: #A8A396; font-size: 13px">no transaction</td>
+          </tr>
+          <tr style="background: #201F1B">
+            <td style="padding: 16px 20px"><span style="display: inline-flex; align-items: center; gap: 8px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6E6A60"></span>Stored</span></td>
+            <td style="padding: 16px 20px; font-family: 'Geist Mono', monospace">$0</td>
+            <td style="padding: 16px 20px">Current weather <span style="color: #A8A396">· Rail402</span></td>
+            <td style="padding: 16px 20px; color: #C9C4B6">Same request again, stored result returned</td>
+            <td style="padding: 16px 20px; text-align: right; color: #A8A396; font-size: 13px">not paid twice</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Catalog teaser -->
+  <section id="catalog" aria-labelledby="cat-h" style="max-width: 1200px; margin: 0 auto; padding: 112px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap">
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 640px">
+        <h2 id="cat-h" style="margin: 0; font-size: clamp(32px, 4vw, 52px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">Tools from a tenth of a cent.</h2>
+        <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9C4B6">Our registry and Rail402's Bazaar, searched through one connection. Prices from $0.001 to $0.10 per call.</p>
+      </div>
+      <a href="#" class="tpx-ghost" style="display: inline-flex; align-items: center; height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid #45423B; color: #F1EEE6; font-size: 15px; font-weight: 500; text-decoration: none">Browse all tools</a>
+    </div>
+
+    <ul style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px">
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-family: 'Geist Mono', monospace; font-size: 15px; font-weight: 500">dex_best_path</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$0.02</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Best swap path between two Stellar assets.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Stellar Oracle</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Toolport registry</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">MCP tool</span></span>
+      </a></li>
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-family: 'Geist Mono', monospace; font-size: 15px; font-weight: 500">account_summary</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$0.01</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Balances and recent operations for a Stellar account.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Toolport registry</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">MCP tool</span></span>
+      </a></li>
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-size: 15px; font-weight: 500">Current weather</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$0.001</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Current weather for a city.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Rail402 seller</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Rail402</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">HTTP API</span></span>
+      </a></li>
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-size: 15px; font-weight: 500">Translate a short text</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$0.002</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Translate a short piece of text.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Rail402</span></span>
+      </a></li>
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-size: 15px; font-weight: 500">Air quality index</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">$0.001</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Air quality index for a location.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Rail402</span></span>
+      </a></li>
+      <li><a href="#" class="tpx-card" style="height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 18px; background: #24231F; border: 1px solid #36342E; text-decoration: none; color: #F1EEE6">
+        <span style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px"><span style="font-family: 'Geist Mono', monospace; font-size: 15px; font-weight: 500">ping</span><span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">free</span></span>
+        <span style="font-size: 14px; line-height: 1.5; color: #C9C4B6">Check the server is reachable. Costs nothing.</span>
+        <span style="margin-top: auto; display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px; color: #A8A396"><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">Toolport registry</span><span style="padding: 3px 8px; border-radius: 999px; background: #2E2C27">MCP tool</span></span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- For sellers -->
+  <section id="sell" aria-labelledby="sell-h" style="max-width: 1200px; margin: 0 auto; padding: 112px 24px 40px; box-sizing: border-box">
+    <div style="background: #24231F; border: 1px solid #36342E; border-radius: 28px; padding: clamp(24px, 4vw, 48px); display: flex; flex-direction: column; gap: 32px">
+      <div style="display: flex; flex-wrap: wrap; gap: 32px; justify-content: space-between">
+        <div style="flex: 1 1 420px; display: flex; flex-direction: column; gap: 14px">
+          <h2 id="sell-h" style="margin: 0; font-size: clamp(30px, 3.6vw, 46px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">Already run an MCP server? Get paid per call.</h2>
+          <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #C9C4B6">Set a price per tool and get paid in USDC on Stellar. Agents find you through the catalog and see your price before they buy.</p>
+          <div style="display: flex; gap: 12px; flex-wrap: wrap; padding-top: 6px">
+            <a href="#" class="tpx-cta" style="display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 12px; background: #F1EEE6; color: #1B1A17; font-size: 15px; font-weight: 500; text-decoration: none">List your server</a>
+            <a href="#" class="tpx-ghost" style="display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 12px; border: 1px solid #45423B; color: #F1EEE6; font-size: 15px; font-weight: 500; text-decoration: none">Seller docs</a>
+          </div>
+        </div>
+        <ol style="flex: 1 1 360px; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; font-size: 15px">
+          <li style="display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #36342E"><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #A8A396; padding-top: 3px">01</span><span>Paste your MCP URL. We discover its tools.</span></li>
+          <li style="display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #36342E"><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #A8A396; padding-top: 3px">02</span><span>Set a price per tool, from $0.001.</span></li>
+          <li style="display: flex; gap: 14px; padding: 12px 0; border-bottom: 1px solid #36342E"><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #A8A396; padding-top: 3px">03</span><span>Choose a payout address. We check its USDC trustline.</span></li>
+          <li style="display: flex; gap: 14px; padding: 12px 0"><span style="font-family: 'Geist Mono', monospace; font-size: 12px; color: #A8A396; padding-top: 3px">04</span><span>Get your paid URL. Revenue and calls show up live.</span></li>
+        </ol>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <span style="font-size: 14px; color: #C9C4B6">Or monetize from code, with one line:</span>
+          <button type="button" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid #45423B; background: transparent; color: #F1EEE6; font: inherit; font-size: 13px; cursor: pointer">Copy</button>
+        </div>
+<pre style="margin: 0; padding: 20px 22px; border-radius: 16px; background: #141311; border: 1px solid #2E2C27; font-family: 'Geist Mono', monospace; font-size: 14.5px; line-height: 1.6; overflow-x: auto; white-space: pre; color: #F1EEE6">server.<span style="color: #7FD3AB">paidTool</span><span style="color: #A8A396">(</span><span style="color: #8DB0EC">"dex_best_path"</span><span style="color: #A8A396">,</span> <span style="color: #8DB0EC">"Best DEX path between two assets"</span><span style="color: #A8A396">,</span> <span style="color: #8DB0EC">"$0.02"</span><span style="color: #A8A396">,</span> schema<span style="color: #A8A396">,</span> handler<span style="color: #A8A396">)</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Built with -->
+  <section aria-labelledby="built-h" style="max-width: 1200px; margin: 0 auto; padding: 96px 24px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; align-items: center; text-align: center">
+    <h2 id="built-h" style="margin: 0; font-size: 15px; font-weight: 400; color: #A8A396">Built with</h2>
+    <ul style="list-style: none; margin: 0; padding: 0; display: flex; gap: clamp(24px, 5vw, 64px); flex-wrap: wrap; justify-content: center; font-size: 24px; font-weight: 600; letter-spacing: -0.04em; color: #C9C4B6">
+      <li>Stellar</li>
+      <li>x402</li>
+      <li>OpenZeppelin</li>
+      <li>Rail402</li>
+      <li>MCP</li>
+    </ul>
+    <p style="margin: 0; font-size: 13px; color: #A8A396">Rail402's Bazaar is a third-party catalog. Toolport searches it alongside its own registry, with credit.</p>
+  </section>
+
+  <!-- FAQ -->
+  <section aria-labelledby="faq-h" style="max-width: 860px; margin: 0 auto; padding: 112px 24px 40px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px">
+    <h2 id="faq-h" style="margin: 0; font-size: clamp(32px, 4vw, 52px); font-weight: 600; letter-spacing: -0.045em; line-height: 1.05">Questions</h2>
+    <div style="display: flex; flex-direction: column; border-top: 1px solid #36342E">
+      <details open style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">Can my agent spend more than I allow?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">No. You set a total budget and a per-call cap. The price is checked before anything is signed, over-cap calls are refused with no transaction, and the budget holds across restarts and parallel calls.</p>
+      </details>
+      <details style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">What if a payment's outcome is unknown?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">It stays held: counted against your budget, never treated as free. You can check it on-chain later, or release it from Activity.</p>
+      </details>
+      <details style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">Will I pay twice for the same request?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">No. Repeating the same request returns the stored result instead of paying again.</p>
+      </details>
+      <details style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">Do I need XLM, API keys or a subscription?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">No. Your agent pays per call in USDC. There's no XLM to hold for fees, no keys to manage and no plan to sign up for.</p>
+      </details>
+      <details style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">Where do the tools come from?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">Toolport's own registry, plus Rail402's Bazaar, a third-party catalog we search and credit. One MCP connection covers both.</p>
+      </details>
+      <details style="border-bottom: 1px solid #36342E">
+        <summary style="display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 0; font-size: 18px; font-weight: 500; letter-spacing: -0.02em">Is this real money?<span class="tpx-plus" aria-hidden="true" style="font-size: 22px; color: #A8A396; font-weight: 400">+</span></summary>
+        <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #C9C4B6; max-width: 680px">Not yet. Toolport runs on Stellar testnet with test USDC. Get some from the <a href="#" style="color: #7FD3AB">testnet faucet</a>.</p>
+      </details>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section id="connect" aria-labelledby="cta-h" style="max-width: 1200px; margin: 0 auto; padding: 120px 24px 96px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 40px">
+    <div class="tpx-scroll" style="display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center">
+      <svg width="140" height="100" viewBox="0 0 56 40" aria-hidden="true"><circle class="tpl-A" cx="19" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle><circle class="tpl-B" cx="37" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5"></circle><g class="tpl-L"><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#1B1A17" stroke-width="9"></path><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#F1EEE6" stroke-width="5"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#1B1A17" stroke-width="9"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#F1EEE6" stroke-width="5"></path></g></svg>
+      <h2 id="cta-h" style="margin: 0; font-size: clamp(36px, 5vw, 64px); font-weight: 600; letter-spacing: -0.05em; line-height: 1">Plug your agent in.</h2>
+      <p style="margin: 0; font-size: 17px; color: #C9C4B6">Try the whole flow in the browser, or give your agent one config block.</p>
+    </div>
+
+    <div style="width: 100%; display: flex; flex-wrap: wrap; gap: 16px">
+      <div style="flex: 1 1 360px; background: #24231F; border: 1px solid #36342E; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+        <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">Try it in the browser</span>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9C4B6">Connect Freighter, set a budget, and run a paid tool end to end. Nothing to install.</p>
+        <a href="#" class="tpx-cta" style="margin-top: auto; align-self: flex-start; display: inline-flex; align-items: center; height: 48px; padding: 0 20px; border-radius: 12px; background: #F1EEE6; color: #1B1A17; font-size: 15px; font-weight: 500; text-decoration: none">Open the playground</a>
+      </div>
+      <div style="flex: 1.4 1 420px; background: #24231F; border: 1px solid #36342E; border-radius: 22px; padding: 28px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px">
+          <span style="font-size: 20px; font-weight: 600; letter-spacing: -0.03em">Connect your agent</span>
+          <button type="button" style="height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid #45423B; background: transparent; color: #F1EEE6; font: inherit; font-size: 13px; cursor: pointer">Copy</button>
+        </div>
+        <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #C9C4B6">Add this to Claude Desktop or Cursor. $1 budget, $0.05 per call.</p>
+<pre style="margin: 0; padding: 16px 18px; border-radius: 14px; background: #141311; border: 1px solid #2E2C27; font-family: 'Geist Mono', monospace; font-size: 13.5px; line-height: 1.65; overflow-x: auto; white-space: pre; color: #F1EEE6">{
+  <span style="color: #C9C4B6">"mcpServers"</span>: {
+    <span style="color: #C9C4B6">"toolport"</span>: {
+      <span style="color: #C9C4B6">"command"</span>: <span style="color: #8DB0EC">"toolport"</span>,
+      <span style="color: #C9C4B6">"args"</span>: [<span style="color: #8DB0EC">"router"</span>, <span style="color: #8DB0EC">"--max-per-call"</span>, <span style="color: #8DB0EC">"0.05"</span>, <span style="color: #8DB0EC">"--budget"</span>, <span style="color: #8DB0EC">"1"</span>]
+    }
+  }
+}</pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid #2A2925">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 28px 24px 40px; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; font-size: 14px">
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; letter-spacing: -0.055em">
+        <svg width="28" height="20" viewBox="0 0 56 40" aria-hidden="true"><circle cx="19" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5.5"></circle><circle cx="37" cy="20" r="13" fill="none" stroke="#F1EEE6" stroke-width="5.5"></circle><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#1B1A17" stroke-width="10"></path><path d="M30.26 26.5A13 13 0 0 1 25.1 31.48" fill="none" stroke="#F1EEE6" stroke-width="5.5"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#1B1A17" stroke-width="10"></path><path d="M25.74 13.5A13 13 0 0 1 30.9 8.52" fill="none" stroke="#F1EEE6" stroke-width="5.5"></path></svg>
+        toolport
+      </span>
+      <nav aria-label="Footer" class="tpx-nav" style="display: flex; gap: 24px; flex-wrap: wrap">
+        <a href="#" style="text-decoration: none; color: #C9C4B6">GitHub</a>
+        <a href="#" style="text-decoration: none; color: #C9C4B6">Docs</a>
+        <a href="#catalog" style="text-decoration: none; color: #C9C4B6">Catalog</a>
+        <a href="#sell" style="text-decoration: none; color: #C9C4B6">For sellers</a>
+      </nav>
+      <span style="color: #A8A396; font-size: 13px">Stellar testnet only · test USDC</span>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"motion":{"editor":"enum","options":["always","follow system"],"default":"always"},"$preview":{"width":1440,"height":5400}}'>
+class Component extends DCLogic {
+  stepsData() {
+    return [
+      { title: 'Search', ms: 1200, meta: 'free', body: 'The agent asks in plain words. Toolport searches its registry and Rail402’s Bazaar.' },
+      { title: 'Quote', ms: 1200, meta: 'free · nothing signed', body: 'The exact price comes back and is checked against your per-call cap and what’s left.' },
+      { title: 'Sign', ms: 1400, meta: 'USDC', body: 'The wallet signs a USDC authorization for that amount and nothing more.' },
+      { title: 'Run', ms: 1600, meta: 'verified first', body: 'The payment is verified and the provider runs the tool.' },
+      { title: 'Settle', ms: 4000, meta: 'about 5–15 s', body: 'The payment settles on Stellar.' },
+      { title: 'Result', ms: 2200, meta: 'receipt', body: 'Your agent gets the answer and a Stellar Expert link to the payment.' }
+    ];
+  }
+  reduced() {
+    if ((this.props.motion ?? 'always') === 'always') return false;
+    return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  }
+  schedule() {
+    clearTimeout(this.timer);
+    const s = this.state || {};
+    if (s.paused || this.reduced()) return;
+    const steps = this.stepsData();
+    const i = s.step ?? 0;
+    this.timer = setTimeout(() => this.setState({ step: (i + 1) % steps.length }), steps[i].ms);
+  }
+  componentDidMount() { this.schedule(); }
+  componentDidUpdate(prevProps, prevState) {
+    const a = prevState || {};
+    const b = this.state || {};
+    if (a.step !== b.step || a.paused !== b.paused || prevProps.motion !== this.props.motion) this.schedule();
+  }
+  componentWillUnmount() { clearTimeout(this.timer); }
+  renderVals() {
+    const motion = this.props.motion ?? 'always';
+    const s = this.state || {};
+    const active = s.step ?? 0;
+    const paused = !!s.paused;
+    const data = this.stepsData();
+    const steps = data.map((d, i) => ({
+      ...d,
+      idx: i,
+      n: '0' + (i + 1),
+      active: i === active,
+      done: i < active,
+      current: i === active ? 'step' : 'false',
+      stateCls: (i === active ? 'is-active' : i < active ? 'is-done' : 'is-next') + (i === data.length - 1 ? ' is-final' : ''),
+      pick: () => this.setState({ step: i })
+    }));
+    return {
+      motionCls: motion === 'always' ? '' : 'tpx-respect',
+      steps,
+      activeN: '0' + (active + 1),
+      activeTitle: data[active].title,
+      pauseCls: paused ? 'tpx-paused' : '',
+      pausedStr: paused ? 'true' : 'false',
+      pauseLabel: paused ? 'Play' : 'Pause',
+      togglePause: () => this.setState({ paused: !paused })
+    };
+  }
+}
+</script>
+</body>
+</html>
