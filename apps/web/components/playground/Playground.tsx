@@ -148,6 +148,7 @@ export function Playground() {
     setShown(null);
     setAttempt({ paid, startedAt: Date.now(), quoted: !!price, signed: false, settled: false, ran: false });
     try {
+      let quoted: Quote | undefined;
       if (paid) {
         let q = price;
         if (!q) {
@@ -157,9 +158,11 @@ export function Playground() {
         }
         const why = refusal(budget, q.amountUnits);
         if (why) return void finish(tool, callArgs, { status: "refused", amountUnits: 0, text: why });
+        quoted = q;
       }
       const outcome = await invoke(tool, callArgs, wallet?.address ?? "", budget, {
         onSigned: () => setAttempt((a) => a && { ...a, signed: true }),
+        quoted,
       });
       setAttempt((a) => a && { ...a, ran: outcome.status !== "failed", settled: outcome.status === "paid" });
       finish(tool, callArgs, outcome);

@@ -21,4 +21,11 @@ if git diff --cached -U0 --diff-filter=ACMR | grep -E '^\+' | grep -qE 'S[A-Z2-7
   status=1
 fi
 
+# Credential-shaped assignments and JWTs (FACILITATOR_API_KEY, SESSION_SECRET, Turso tokens); examples are exempt.
+if git diff --cached -U0 --diff-filter=ACMR -- . ':(exclude)*.example' ':(exclude)**/.env.example' | grep -E '^\+' |
+  grep -qE '(API_KEY|SECRET|TOKEN|PASSWORD)[A-Z_]*["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_./+-]{16,}|eyJ[A-Za-z0-9_-]{20,}\.'; then
+  echo "check-secrets: a staged change looks like a credential (API key, secret, token or JWT)" >&2
+  status=1
+fi
+
 exit $status

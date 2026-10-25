@@ -135,6 +135,23 @@ export async function quote(tool: CatalogTool, args: Record<string, unknown>): P
 export interface InvokeHooks {
   /** The wallet returned the signature for the USDC transfer. */
   onSigned?(): void;
+  /** The price the user saw. A priced call only pays this exact amount to this exact payee. */
+  quoted?: Quote;
+}
+
+type Requirement = { scheme: string; network: string; asset: string; amount: string; payTo: string };
+
+/** The one payment option we accept: exact USDC on our network, matching the quote when there is one. */
+function acceptable<T extends Requirement>(accepts: readonly T[], quoted?: Quote): T | undefined {
+  return accepts.find(
+    (a) =>
+      a.scheme === "exact" &&
+      a.network === NETWORK &&
+      a.asset === USDC &&
+      Number.isSafeInteger(Number(a.amount)) &&
+      Number(a.amount) > 0 &&
+      (!quoted || (Number(a.amount) === quoted.amountUnits && a.payTo === quoted.payTo)),
+  );
 }
 
 /** Call a tool, paying with Freighter if it's priced, but never above the budget. */
@@ -156,12 +173,20 @@ export async function invoke(
       return signed;
     },
   };
-  const payments = new x402Client().register(NETWORK as `${string}:${string}`, new ExactStellarScheme(signer, { url: RPC_URL }));
+  // Pay exactly the option approved below, never another one from the same challenge.
+  const payments = new x402Client((_version, accepts) => acceptable(accepts, hooks.quoted) ?? accepts[0]).register(
+    NETWORK as `${string}:${string}`,
+    new ExactStellarScheme(signer, { url: RPC_URL }),
+  );
   const mcp = new x402MCPClient(new Client({ name: "stellarpay-web", version: "0.1.0" }), payments, {
     autoPayment: true,
     onPaymentRequested: ({ paymentRequired }) => {
-      const option = paymentRequired.accepts.find((a) => a.network === NETWORK && a.asset === USDC);
-      denial = option ? refusal(budget, Number(option.amount)) : "No USDC payment option";
+      const option = acceptable(paymentRequired.accepts, hooks.quoted);
+      denial = option
+        ? refusal(budget, Number(option.amount))
+        : hooks.quoted
+          ? "The price or payee changed after the quote. Get a new price."
+          : "No USDC payment option";
       if (denial || approvedUnits > 0) return false; // one payment per call, never an automatic second one
       approvedUnits = Number(option!.amount);
       return true;
