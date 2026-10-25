@@ -65,6 +65,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             )}
             <a href="#catalog" className={navLink}>Catalog</a>
             <a href="#sell" className={navLink}>For sellers</a>
+            <Link href="/pitch" className={navLink}>Pitch</Link>
           </nav>
           <span className="text-[13px] text-muted">Stellar testnet only · test USDC</span>
         </div>
