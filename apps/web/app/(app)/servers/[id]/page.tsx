@@ -55,17 +55,17 @@ export default function ServerPage() {
     <div className="space-y-8">
       <div className="space-y-2">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h1 className="text-2xl font-semibold">{server.name}</h1>
+          <h1 className="text-3xl font-semibold tracking-[-0.04em] text-fg">{server.name}</h1>
           <a
             href={`${EXPLORER}/account/${server.payTo}`}
             target="_blank"
             rel="noreferrer"
-            className="font-mono text-xs text-muted hover:text-white"
+            className="font-mono text-xs text-muted hover:text-fg"
           >
             payTo {short(server.payTo)} ↗
           </a>
         </div>
-        {server.description && <p className="text-muted">{server.description}</p>}
+        {server.description && <p className="text-fg-soft">{server.description}</p>}
         <UrlRow url={server.mcpUrl} />
       </div>
 
@@ -79,9 +79,9 @@ export default function ServerPage() {
       )}
 
       <Card className="space-y-3">
-        <h2 className="font-semibold">Tools and prices</h2>
+        <h2 className="font-semibold text-fg">Tools and prices</h2>
         <table className="w-full text-sm">
-          <thead className="text-left text-xs uppercase tracking-wide text-muted">
+          <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="py-2">Tool</th>
               <th className="py-2">Price (USD per call)</th>
@@ -105,7 +105,7 @@ export default function ServerPage() {
       {isOwner && (
         <Card className="space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Recent calls</h2>
+            <h2 className="font-semibold text-fg">Recent calls</h2>
             <span className="text-xs text-muted">updates every 4s</span>
           </div>
           {calls.length === 0 ? (
@@ -113,7 +113,7 @@ export default function ServerPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-muted">
+                <thead className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
                   <tr>
                     <th className="py-2 pr-3">When</th>
                     <th className="py-2 pr-3">Tool</th>
@@ -128,10 +128,10 @@ export default function ServerPage() {
                   {calls.map((c) => (
                     <tr key={c.id} title={c.error ?? undefined}>
                       <td className="py-2 pr-3 text-muted">{new Date(c.createdAt).toLocaleTimeString()}</td>
-                      <td className="py-2 pr-3 font-mono">{c.tool}</td>
+                      <td className="py-2 pr-3 font-mono text-fg">{c.tool}</td>
                       <td className={`py-2 pr-3 ${STATUS_STYLE[c.status]}`}>{c.status.replace("_", " ")}</td>
                       <td className="py-2 pr-3 font-mono">{c.status === "paid" ? usd(c.amountUsd) : "–"}</td>
-                      <td className="py-2 pr-3 font-mono text-xs">{c.payer ? short(c.payer) : "–"}</td>
+                      <td className="py-2 pr-3 font-mono text-xs text-fg-soft">{c.payer ? short(c.payer) : "–"}</td>
                       <td className="py-2 pr-3 text-muted">{(c.latencyMs / 1000).toFixed(1)}s</td>
                       <td className="py-2">
                         {c.explorerUrl ? (
@@ -152,14 +152,14 @@ export default function ServerPage() {
       )}
 
       <Card className="space-y-3">
-        <h2 className="font-semibold">Use it from Claude Desktop or Cursor</h2>
+        <h2 className="font-semibold text-fg">Use it from Claude Desktop or Cursor</h2>
         <p className="text-sm text-muted">
-          1. <code className="font-mono">npx stellarpay wallet create --usdc 5</code> (testnet wallet with USDC, no XLM
+          1. <code className="font-mono text-fg-soft">toolport wallet create --usdc 5</code> (testnet wallet with USDC, no XLM
           needed for fees). 2. Add to claude_desktop_config.json:
         </p>
         <Code>{claudeDesktopConfig([server.mcpUrl])}</Code>
         <p className="text-sm text-muted">Or from the terminal:</p>
-        <Code>{`npx stellarpay tools ${server.mcpUrl}`}</Code>
+        <Code>{`toolport tools ${server.mcpUrl}`}</Code>
       </Card>
 
       {isOwner && (
@@ -214,8 +214,8 @@ function ToolRow({
   return (
     <tr>
       <td className="py-2 pr-3 align-top">
-        <div className="font-mono">{tool.name}</div>
-        <div className="text-xs text-muted">{tool.description}</div>
+        <div className="font-mono text-fg">{tool.name}</div>
+        <div className="text-xs text-fg-soft">{tool.description}</div>
         {error && <div className="text-xs text-bad">{error}</div>}
       </td>
       <td className="py-2 pr-3 align-top">
@@ -232,7 +232,7 @@ function ToolRow({
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               inputMode="decimal"
-              className="w-24 rounded-md border border-line bg-ink px-2 py-1 font-mono text-sm"
+              className="w-24 rounded-[10px] border border-line-strong bg-ink px-2 py-1 font-mono text-sm text-fg focus:border-good focus:outline-none"
             />
             {dirty && (
               <Button type="submit" disabled={saving}>
@@ -241,12 +241,13 @@ function ToolRow({
             )}
           </form>
         ) : (
-          <span className="font-mono">{usd(tool.priceUsd)}</span>
+          <span className="font-mono text-fg">{usd(tool.priceUsd)}</span>
         )}
       </td>
       <td className="py-2 align-top">
         <input
           type="checkbox"
+          className="accent-good"
           checked={tool.enabled}
           disabled={!editable || saving}
           onChange={(e) => void save({ enabled: e.target.checked })}
@@ -279,7 +280,7 @@ function OwnerActions({
   };
   return (
     <Card className="space-y-3">
-      <h2 className="font-semibold">Settings</h2>
+      <h2 className="font-semibold text-fg">Settings</h2>
       <div className="flex flex-wrap gap-2">
         <Button variant="ghost" onClick={() => run(() => api(`/api/servers/${server.id}/refresh`, { method: "POST", token }))}>
           Refresh tools from upstream
@@ -292,7 +293,7 @@ function OwnerActions({
             )
           }
         >
-          {server.listed ? "Unlist from registry" : "List in registry"}
+          {server.listed ? "Unlist from catalog" : "List in catalog"}
         </Button>
         <Button
           variant="danger"
@@ -309,7 +310,7 @@ function OwnerActions({
           Delete
         </Button>
       </div>
-      <p className="text-xs text-muted">Upstream: <code className="font-mono">{server.upstreamUrl}</code></p>
+      <p className="text-xs text-muted">Upstream: <code className="font-mono text-fg-soft">{server.upstreamUrl}</code></p>
       <ErrorNote message={error} />
     </Card>
   );
