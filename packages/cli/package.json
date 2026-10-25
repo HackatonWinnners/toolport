@@ -1,0 +1,20 @@
+{
+  "name": "stellarpay",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pay for MCP tools with USDC on Stellar: stdio bridge for Claude Desktop/Cursor + agent wallet",
+  "bin": {
+    "stellarpay": "./bin/stellarpay.js"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@stellar/stellar-sdk": "^16.3.0",
+    "@stellarpay/core": "0.1.0",
+    "@stellarpay/mcp": "0.1.0",
+    "tsx": "^4.21.0",
+    "@stellarpay/router": "0.1.0"
+  }
+}
