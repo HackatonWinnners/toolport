@@ -1,0 +1,20 @@
+{
+  "name": "@stellarpay/router",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Discovery, unpaid quotes and durable agent runs across Stellar MCP and HTTP tools",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@stellarpay/core": "0.1.0",
+    "@stellarpay/mcp": "0.1.0",
+    "ajv": "^8.20.0",
+    "undici": "^7.30.0",
+    "zod": "^3.25.76"
+  }
+}

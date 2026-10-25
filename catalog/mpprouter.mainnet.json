@@ -1,0 +1,79 @@
+[
+  {
+    "id": "exa-search",
+    "title": "Exa web search",
+    "description": "Paid read-only web data through MPP Router. Mainnet USDC; price is taken from the live x402 challenge.",
+    "network": "stellar:pubnet",
+    "transport": "http",
+    "url": "https://apiserver.mpprouter.dev/v1/services/exa/search",
+    "method": "POST",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1
+            },
+            "numResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10
+            }
+          },
+          "required": [
+            "query"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "body"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "id": "firecrawl-scrape",
+    "title": "Firecrawl web scrape",
+    "description": "Paid read-only web data through MPP Router. Mainnet USDC; price is taken from the live x402 challenge.",
+    "network": "stellar:pubnet",
+    "transport": "http",
+    "url": "https://apiserver.mpprouter.dev/v1/services/firecrawl/scrape",
+    "method": "POST",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "pattern": "^https?://"
+            },
+            "formats": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "markdown",
+                  "html"
+                ]
+              }
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "body"
+      ],
+      "additionalProperties": false
+    }
+  }
+]
