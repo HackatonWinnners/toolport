@@ -323,7 +323,7 @@ export function createApp(deps: AppDeps) {
 
   app.get("/", (c) =>
     c.json({
-      name: "StellarPay MCP gateway",
+      name: "Toolport MCP gateway",
       network: deps.network,
       docs: "https://github.com/ (see README)",
       endpoints: ["/v1/mcp/:serverId", "/api/servers", "/api/health"],

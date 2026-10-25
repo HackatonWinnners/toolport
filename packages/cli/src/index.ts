@@ -23,19 +23,21 @@ import { pathToFileURL } from "node:url";
 import { runRouter } from "./router.js";
 import { loadWallet, resolveSecret, saveWallet, walletPath } from "./wallet.js";
 
-const HELP = `stellarpay: pay for MCP tools with USDC on Stellar
+const HELP = `toolport: pay for MCP tools with USDC on Stellar
+
+Toolport's CLI is installed as "toolport"; "stellarpay" is an alias for the same binary.
 
 Usage:
-  stellarpay wallet create [--usdc 5]       New testnet wallet: keypair, Friendbot XLM, USDC trustline,
+  toolport wallet create [--usdc 5]         New testnet wallet: keypair, Friendbot XLM, USDC trustline,
                                             optionally buy USDC on the testnet DEX
-  stellarpay wallet show                    Address, XLM and USDC balances
-  stellarpay wallet buy-usdc <amount>       Buy USDC with XLM on the DEX (testnet helper)
-  stellarpay tools <url>                    List tools and prices of an MCP server
-  stellarpay call <url> <tool> [json-args]  Call one tool, paying if needed
-  stellarpay router [--gateway <url>] [--manifest <path>] [--bazaar <url>]
+  toolport wallet show                      Address, XLM and USDC balances
+  toolport wallet buy-usdc <amount>         Buy USDC with XLM on the DEX (testnet helper)
+  toolport tools <url>                      List tools and prices of an MCP server
+  toolport call <url> <tool> [json-args]    Call one tool, paying if needed
+  toolport router [--gateway <url>] [--manifest <path>] [--bazaar <url>]
                                           Discovery MCP with quotes, durable runs and budgets
-  stellarpay connect --urls <a,b>           Run a stdio MCP bridge for Claude Desktop / Cursor
-  stellarpay budget [--reconcile] [--release <id>]
+  toolport connect --urls <a,b>             Run a stdio MCP bridge for Claude Desktop / Cursor
+  toolport budget [--reconcile] [--release <id>]
                                           Session spend and held payments; settle verified holds
                                           on-chain, or release one you know was never paid
 
@@ -47,7 +49,8 @@ Options:
   --budget <usd>         Persistent session budget (default 1 USDC)
   --session <name>       Resume this wallet/network budget (default default)
   --state-db <path>      Local state database (default next to wallet.json)
-  --gateway <url>        StellarPay registry for router discovery
+  --gateway <url>        Toolport registry for router discovery
+                         (default: TOOLPORT_GATEWAY_URL, else the hosted testnet registry)
   --manifest <path>      Curated JSON tools; pubnet examples: catalog/mpprouter.mainnet.json
   --bazaar <url>         Rail402 discovery URL (testnet default: https://testnet.rail402.dev; "" for none)
   --allow-local         Allow loopback providers for local development
@@ -246,7 +249,7 @@ async function main() {
       const secretKey = await resolveSecret(values.secret);
       return runRouter({ secretKey, network: network(), rpcUrl: values["rpc-url"] ?? process.env.STELLAR_RPC_URL,
         store: await agentStore(secretKey),
-        ...limits(), gatewayUrl: values.gateway ?? (network() === DEFAULT_NETWORK ? "https://stellarpay-gateway-ten.vercel.app" : undefined),
+        ...limits(), gatewayUrl: values.gateway ?? (process.env.TOOLPORT_GATEWAY_URL || undefined) ?? (network() === DEFAULT_NETWORK ? "https://stellarpay-gateway-ten.vercel.app" : undefined),
         // Rail402's hosted testnet Bazaar is free and keyless; pass --bazaar "" to turn it off.
         manifestPath: values.manifest, bazaarUrl: (values.bazaar ?? (network() === DEFAULT_NETWORK ? "https://testnet.rail402.dev" : undefined)) || undefined,
         allowLoopback: values["allow-local"],
