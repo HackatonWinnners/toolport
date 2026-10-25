@@ -107,14 +107,10 @@ export function Proof() {
   );
 }
 
-// Registry tools come from apps/demo-server; Rail402 cards are only those listed in
-// docs/research/evidence/rail402-live-resources.json (weather, translate, air quality).
+// Registry tools come from apps/demo-server (Stellar Oracle).
 const CATALOG = [
   { name: "dex_best_path", mono: true, price: "$0.02", body: "Best swap path between two Stellar assets.", tags: ["Stellar Oracle", "Toolport registry", "MCP tool"], q: "dex_best_path" },
   { name: "account_summary", mono: true, price: "$0.01", body: "Balances and recent operations for a Stellar account.", tags: ["Toolport registry", "MCP tool"], q: "account_summary" },
-  { name: "Current weather", price: "$0.001", body: "Current weather for a city.", tags: ["Rail402 seller", "Rail402", "HTTP API"], q: "what's the weather in Lisbon" },
-  { name: "Translate a short text", price: "$0.002", body: "Translate a short piece of text.", tags: ["Rail402"], q: "translate a short text" },
-  { name: "Air quality index", price: "$0.001", body: "Air quality index for a location.", tags: ["Rail402"], q: "air quality index" },
   { name: "ping", mono: true, price: "free", body: "Check the server is reachable. Costs nothing.", tags: ["Toolport registry", "MCP tool"], q: "ping" },
 ];
 
@@ -123,9 +119,9 @@ export function Catalog() {
     <Section id="catalog" labelledBy="cat-h" className="flex flex-col gap-8 pb-10 pt-20 sm:pt-28">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex max-w-[640px] flex-col gap-3.5">
-          <H2 id="cat-h">Tools from a tenth of a cent.</H2>
+          <H2 id="cat-h">Tools from a cent a call.</H2>
           <p className="m-0 text-[17px] leading-[1.6] text-fg-soft">
-            Our registry and Rail402&apos;s Bazaar, searched through one connection. Prices from $0.001 to $0.10 per
+            Every tool in the Toolport registry, searched through one connection, with the price before every
             call.
           </p>
         </div>
@@ -230,13 +226,10 @@ export function BuiltWith() {
         Built with
       </h2>
       <ul className="m-0 flex list-none flex-wrap justify-center gap-x-[clamp(24px,5vw,64px)] gap-y-3 p-0 text-2xl font-semibold tracking-[-0.04em] text-fg-soft">
-        {["Stellar", "x402", "OpenZeppelin", "Rail402", "MCP"].map((n) => (
+        {["Stellar", "x402", "OpenZeppelin", "MCP"].map((n) => (
           <li key={n}>{n}</li>
         ))}
       </ul>
-      <p className="m-0 text-[13px] text-muted">
-        Rail402&apos;s Bazaar is a third-party catalog. Toolport searches it alongside its own registry, with credit.
-      </p>
     </Section>
   );
 }
@@ -257,7 +250,7 @@ const FAQ: [string, ReactNode][] = [
   ],
   [
     "Where do the tools come from?",
-    "Toolport's own registry, plus Rail402's Bazaar, a third-party catalog we search and credit. One MCP connection covers both.",
+    "From the Toolport registry: any MCP server a seller lists, priced per tool. One MCP connection covers all of them.",
   ],
   [
     "Is this real money?",

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 // and prefers-reduced-motion stops auto-advance (the user can still click through).
 // Settle is 2.8 s here (4 s on the board) so the active step always changes within 3 s (S1).
 const STEPS = [
-  { title: "Search", ms: 1200, meta: "free", body: "The agent asks in plain words. Toolport searches its registry and Rail402’s Bazaar." },
+  { title: "Search", ms: 1200, meta: "free", body: "The agent asks in plain words. Toolport searches its registry." },
   { title: "Quote", ms: 1200, meta: "free · nothing signed", body: "The exact price comes back and is checked against your per-call cap and what’s left." },
   { title: "Sign", ms: 1400, meta: "USDC", body: "The wallet signs a USDC authorization for that amount and nothing more." },
   { title: "Run", ms: 1600, meta: "verified first", body: "The payment is verified and the provider runs the tool." },

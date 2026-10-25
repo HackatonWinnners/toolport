@@ -19,15 +19,6 @@ export const PROOF: ProofRow[] = [
   {
     status: "Settled",
     dot: "settled",
-    amount: "$0.001",
-    tool: "Current weather",
-    source: "Rail402",
-    what: "Lisbon: 21°, sunny",
-    tx: "9d1d9665682a7b7d2866ff77b6083b735df2cc473fc737dc61bfe389380886be",
-  },
-  {
-    status: "Settled",
-    dot: "settled",
     amount: "$0.02",
     tool: "dex_best_path",
     mono: true,

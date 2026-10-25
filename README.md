@@ -2,7 +2,7 @@
 
 **Your agent pays per tool call, in USDC on Stellar, under a hard budget.** Toolport lets any AI agent (Claude Desktop, Cursor, your own) find paid MCP and HTTP tools, see the exact price before it buys, and pay for each call over [x402](https://github.com/coinbase/x402) with a Soroban auth entry. Every call is checked against a per-call cap and a persistent session budget before anything is signed. No API keys, no subscriptions, and the agent never needs XLM for fees.
 
-- **Buy:** one discovery MCP (`toolport router`) searches the Toolport registry, curated JSON manifests and [Rail402](https://rail402.dev)'s Bazaar of paid APIs and MCP tools, then quotes and pays under your caps.
+- **Buy:** one discovery MCP (`toolport router`) searches the Toolport registry and curated JSON manifests of paid APIs and MCP tools, then quotes and pays under your caps.
 - **Sell:** a server owner registers an MCP server with the Toolport gateway, sets a price per tool, and is paid in USDC for every successful call.
 
 Toolport is the Stellar counterpart of [MCPay](https://github.com/microchipgnu/MCPay), built on the official x402 packages (`@x402/stellar`, `@x402/mcp`) and the [x402 MCP transport](https://github.com/coinbase/x402/blob/main/specs/transports-v2/mcp.md). Built for [Hack Meridian](https://www.hackmeridian.com/) 2026, Genesis path, Stellar Composed track.
@@ -37,7 +37,6 @@ cp apps/web/.env.example apps/web/.env.local            # read by Next.js
 ```
 
 The gateway needs a facilitator, so pick one in `apps/gateway/.env`:
-- Rail402's free hosted testnet facilitator, no key needed: `FACILITATOR_URL=https://testnet.rail402.dev`.
 - OpenZeppelin: `FACILITATOR_URL=https://channels.openzeppelin.com/x402/testnet`, plus a `FACILITATOR_API_KEY` from <https://channels.openzeppelin.com/testnet/gen>.
 - In-process: `FACILITATOR_SECRET_KEY=S...` set to any Friendbot-funded account.
 
@@ -110,7 +109,7 @@ Run it from the repo root. With `-w`, `npm link` links the named workspace rathe
 | `toolport wallet buy-usdc <amount>` | Buy USDC with XLM on the DEX (testnet helper) |
 | `toolport tools <url>` | List the tools and prices of an MCP server |
 | `toolport call <url> <tool> [json-args]` | Call one tool, paying if needed |
-| `toolport router [--gateway <url>] [--manifest <path>] [--bazaar <url>]` | Discovery MCP with quotes, durable runs and budgets |
+| `toolport router [--gateway <url>] [--manifest <path>]` | Discovery MCP with quotes, durable runs and budgets |
 | `toolport connect --urls <a,b>` | Stdio MCP bridge to fixed paid servers |
 | `toolport budget [--reconcile] [--release <id>]` | Session spend and held payments |
 
@@ -118,16 +117,15 @@ Common options: `--secret`, `--network stellar:testnet|stellar:pubnet`, `--rpc-u
 
 ## Agent discovery router
 
-One MCP searches tools across the Toolport registry, Rail402's Bazaar and curated JSON manifests. The agent reads a schema and a quote, then buys a call under an explicit cap. HTTP and MCP tools go through the same USDC client and persistent wallet budget. For Bazaar listings, search uses Rail402's own ranking (BM25F plus embeddings), so "what's the weather in Lisbon" finds a weather API that shares none of those words. If Rail402 can't be reached, search falls back to word matching.
+One MCP searches tools across the Toolport registry and curated JSON manifests. The agent reads a schema and a quote, then buys a call under an explicit cap. HTTP and MCP tools go through the same USDC client and persistent wallet budget.
 
 ```bash
-# On testnet, the defaults are the hosted registry (or TOOLPORT_GATEWAY_URL) and Rail402's free
-# hosted Bazaar (https://testnet.rail402.dev). Use an existing funded testnet wallet.
+# On testnet, the default is the hosted registry (or TOOLPORT_GATEWAY_URL). Use an existing funded testnet wallet.
 toolport router --max-per-call 0.05 --budget 1 --session hackmeridian
 # Point it at your own gateway:
 TOOLPORT_GATEWAY_URL=https://api.toolport.<domain> toolport router --max-per-call 0.05 --budget 1
-# Local development, without Rail402:
-toolport router --gateway http://localhost:4021 --allow-local --bazaar ""
+# Local development:
+toolport router --gateway http://localhost:4021 --allow-local
 ```
 
 The router's registry default is `--gateway`, then `TOOLPORT_GATEWAY_URL`, then the hosted testnet registry built into the CLI. Today that built-in registry is the legacy Vercel gateway.
@@ -257,9 +255,7 @@ These are real calls made with this repo (agent wallet → provider wallet, fee 
 | Claude-Desktop-style stdio bridge | `dex_best_path` | $0.02 | [dbee8459…](https://stellar.expert/explorer/testnet/tx/dbee845929b6b1cc86dd61dd3a475acd1d73cb21b39964e4ed3cd90fbe8b7e2e) |
 | Gateway + hosted OpenZeppelin facilitator | `dex_best_path` | $0.02 | [7333ab0e…](https://stellar.expert/explorer/testnet/tx/7333ab0e1ca876ad98aa792c4746bd37d818d9f82c752efc373e6ad2506dfd87) |
 | Deployed gateway on Vercel + OpenZeppelin | `dex_best_path` | $0.02 | [b3168b85…](https://stellar.expert/explorer/testnet/tx/b3168b851ff33fc7cd7f64d1ef336bafa2187c64c5747cf39bcb99bc5e6efb76) |
-| Gateway + Rail402 hosted facilitator (no API key) | `dex_best_path` | $0.02 | [5ae464f7…](https://stellar.expert/explorer/testnet/tx/5ae464f7f38f6023123a06f7f68dbaab0c1b1c996fd0c1eaccc852e0c47c6d86) |
 | Router → our registry, verified on-chain | `dex_best_path` | $0.02 | [c31160c7…](https://stellar.expert/explorer/testnet/tx/c31160c7cc5a9191eb63c984b9876c2f5d2e87f6bfe5fc8de0e30432cd364d77) |
-| Router → third-party seller found in Rail402 by "what's the weather in Lisbon" | `GET demo.rail402.dev/weather` | $0.001 | [9d1d9665…](https://stellar.expert/explorer/testnet/tx/9d1d9665682a7b7d2866ff77b6083b735df2cc473fc737dc61bfe389380886be) |
 | Router, same idempotency key again | (stored run returned) | – | no transaction: not paid twice |
 | Router, price above the call's cap | `dex_best_path` with `maxAmount: 0.001` | – | no transaction: refused before signing |
 
@@ -304,7 +300,7 @@ sequenceDiagram
 | --- | --- |
 | [`packages/core`](packages/core) | Shared x402-on-Stellar code: USDC units (7 decimals), facilitator clients (hosted or in-process), resource server, Horizon account helpers |
 | [`packages/mcp`](packages/mcp) | `createPaidMcpHandler` with `server.paidTool(...)` for providers; `StellarPayClient` with spend limits for agents |
-| [`packages/router`](packages/router) | Catalog adapters (registry, Rail402 Bazaar, manifests), search, schema validation, unpaid quotes, durable runs and the discovery MCP |
+| [`packages/router`](packages/router) | Catalog adapters (registry, manifests), search, schema validation, unpaid quotes, durable runs and the discovery MCP |
 | [`packages/cli`](packages/cli) | `toolport` CLI (alias `stellarpay`): `router`, `connect`, `wallet create/show/buy-usdc`, `tools`, `call`, `budget` |
 | [`apps/gateway`](apps/gateway) | Hono gateway: paid MCP proxy at `/v1/mcp/:serverId` plus a REST API (wallet sign-in, registration, pricing, call log, stats), SQLite/libsql via Drizzle |
 | [`apps/web`](apps/web) | Next.js web app: landing, playground, catalog, activity, seller dashboard with Freighter sign-in, server pages with revenue and transaction links |

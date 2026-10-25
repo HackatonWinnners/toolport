@@ -75,28 +75,4 @@ describe("provider network guard",()=>{
   it("refuses private, credentialed and non-HTTP targets before sending a request",async()=>{
     for(const url of ["http://127.0.0.1:4021","https://u:password@example.com","file:///etc/passwd"])await expect(providerFetch()(url)).rejects.toThrow();
   });
-  it("ranks Bazaar listings by Rail402's own search and falls back to lexical when it fails",async()=>{
-    const usdc=NETWORKS["stellar:testnet"].usdcContract;
-    const item=(id:string,name:string,description:string)=>({type:"http",resource:`https://seller.example/${id}`,serviceName:name,description,
-      accepts:[{scheme:"exact",network:"stellar:testnet",asset:usdc,amount:"10000",payTo:"GSELLER"}],rail402:{listings:[{id,network:"stellar:testnet"}]},
-      extensions:{bazaar:{schema:{properties:{input:{properties:{queryParams:{type:"object",properties:{city:{type:"string"}}}},required:["queryParams"]}}}}}});
-    const items=[item("translate","Translate text","Translate a short text"),item("weather","Current weather","Conditions for a city")];
-    let searchUp=true;
-    const fetcher=vi.fn(async(url:string)=>{
-      if(url.includes("/discovery/resources"))return Response.json({items,pagination:{total:items.length}});
-      if(url.includes("/discovery/search")&&searchUp)return Response.json({resources:[items[1]]});
-      return new Response("down",{status:503});
-    }) as unknown as typeof fetch;
-    const catalog=new ToolCatalog({network:"stellar:testnet",bazaarUrl:"https://bazaar.example",fetcher});
-    await catalog.refresh();
-    // "Is it raining in Lisbon" shares no word with the weather listing; only Rail402's ranking finds it.
-    const smart=await catalog.search("is it raining in Lisbon");
-    expect(smart.searchMode).toBe("lexical+rail402");
-    expect(smart.tools.map((t)=>t.id)).toEqual(["rail402:weather"]);
-    expect(smart.tools[0].inputSchema).toMatchObject({required:["query"]});
-    searchUp=false;
-    const plain=await catalog.search("translate");
-    expect(plain.searchMode).toBe("lexical");
-    expect(plain.tools.map((t)=>t.id)).toEqual(["rail402:translate"]);
-  });
 });

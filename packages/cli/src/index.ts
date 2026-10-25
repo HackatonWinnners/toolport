@@ -34,7 +34,7 @@ Usage:
   toolport wallet buy-usdc <amount>         Buy USDC with XLM on the DEX (testnet helper)
   toolport tools <url>                      List tools and prices of an MCP server
   toolport call <url> <tool> [json-args]    Call one tool, paying if needed
-  toolport router [--gateway <url>] [--manifest <path>] [--bazaar <url>]
+  toolport router [--gateway <url>] [--manifest <path>]
                                           Discovery MCP with quotes, durable runs and budgets
   toolport connect --urls <a,b>             Run a stdio MCP bridge for Claude Desktop / Cursor
   toolport budget [--reconcile] [--release <id>]
@@ -52,7 +52,6 @@ Options:
   --gateway <url>        Toolport registry for router discovery
                          (default: TOOLPORT_GATEWAY_URL, else the hosted testnet registry)
   --manifest <path>      Curated JSON tools; pubnet examples: catalog/mpprouter.mainnet.json
-  --bazaar <url>         Rail402 discovery URL (testnet default: https://testnet.rail402.dev; "" for none)
   --allow-local         Allow loopback providers for local development
 `;
 
@@ -71,7 +70,6 @@ const { values, positionals } = parseArgs({
     "state-db": { type: "string" },
     gateway: { type: "string" },
     manifest: { type: "string" },
-    bazaar: { type: "string" },
     "allow-local": { type: "boolean" },
     reconcile: { type: "boolean" },
     release: { type: "string" },
@@ -250,8 +248,7 @@ async function main() {
       return runRouter({ secretKey, network: network(), rpcUrl: values["rpc-url"] ?? process.env.STELLAR_RPC_URL,
         store: await agentStore(secretKey),
         ...limits(), gatewayUrl: values.gateway ?? (process.env.TOOLPORT_GATEWAY_URL || undefined) ?? (network() === DEFAULT_NETWORK ? "https://stellarpay-gateway-ten.vercel.app" : undefined),
-        // Rail402's hosted testnet Bazaar is free and keyless; pass --bazaar "" to turn it off.
-        manifestPath: values.manifest, bazaarUrl: (values.bazaar ?? (network() === DEFAULT_NETWORK ? "https://testnet.rail402.dev" : undefined)) || undefined,
+        manifestPath: values.manifest,
         allowLoopback: values["allow-local"],
       });
     }

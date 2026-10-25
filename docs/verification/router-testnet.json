@@ -9,22 +9,6 @@
   "verifiedOnChain": true,
   "idempotentReplay": true,
   "capRejectedWithoutPayment": true,
-  "rail402": {
-    "query": "what's the weather in Lisbon",
-    "toolId": "rail402:96eab768-fe71-47c4-9325-8907a4d6da78",
-    "title": "Current weather for a city",
-    "url": "https://demo.rail402.dev/weather",
-    "runId": "97e82653-3a6f-4d53-8424-e6927cabe55a",
-    "status": 200,
-    "body": {
-      "city": "Lisbon",
-      "temperature": 21,
-      "conditions": "sunny"
-    },
-    "transaction": "9d1d9665682a7b7d2866ff77b6083b735df2cc473fc737dc61bfe389380886be",
-    "explorerUrl": "https://stellar.expert/explorer/testnet/tx/9d1d9665682a7b7d2866ff77b6083b735df2cc473fc737dc61bfe389380886be",
-    "verifiedOnChain": true
-  },
   "budget": {
     "scope": "8008572ce91b5b734958db66b9fb37dbe7a90bd204ac24af91e95173aff4e3ad",
     "asset": "USDC",
