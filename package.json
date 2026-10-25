@@ -15,9 +15,11 @@
     "dev:demo": "npm run dev -w @stellarpay/demo-server",
     "dev:web": "npm run dev -w @stellarpay/web",
     "cli": "tsx packages/cli/src/index.ts",
-    "smoke:router": "tsx scripts/smoke-router.ts"
+    "smoke:router": "tsx scripts/smoke-router.ts",
+    "e2e": "playwright test"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "@types/node": "^22.13.4",
     "esbuild": "^0.28.2",
     "tsx": "^4.21.0",
