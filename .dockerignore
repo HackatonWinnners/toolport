@@ -1,0 +1,41 @@
+# Installed and built output: the image installs and builds its own.
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/*.tsbuildinfo
+**/coverage
+.vercel
+
+# VCS and editor/agent state
+.git
+.gitignore
+.DS_Store
+**/.DS_Store
+.mcp.json
+.claude
+
+# Secrets and local data: env files, wallets, SQLite databases. Values come from Compose/Coolify env.
+**/.env
+**/.env.*
+.wallets
+.stellarpay
+**/*.db
+**/*.db-*
+**/*.sqlite
+**/*.sqlite-*
+
+# Not needed at runtime or build time
+docs
+design
+e2e
+test-results
+playwright-report
+playwright.config.ts
+*.log
+**/*.log
+
+# The image definitions themselves
+Dockerfile
+.dockerignore
+docker-compose*.yml

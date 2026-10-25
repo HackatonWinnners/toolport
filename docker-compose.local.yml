@@ -1,0 +1,28 @@
+# Local overrides: publish the three services on localhost.
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+# Seed (from the repo root on the host; the gateway reaches the demo server by its service name):
+#   STELLARPAY_WALLET=.wallets/provider.json npx tsx scripts/seed-gateway.ts http://localhost:4021 http://demo-server:4022/mcp
+# Never use this file on a shared host: it allows upstreams on private addresses.
+
+services:
+  web:
+    build:
+      args:
+        NEXT_PUBLIC_GATEWAY_URL: http://localhost:4021
+    ports:
+      - "127.0.0.1:3000:3000"
+
+  gateway:
+    environment:
+      PUBLIC_URL: http://localhost:4021
+      WEB_ORIGIN: http://localhost:3000
+      # Inside the container, localhost is the gateway itself, so the demo upstream is registered as
+      # http://demo-server:4022/mcp, a private address. A localhost PUBLIC_URL would allow that by
+      # default, but the base file pins the flag, so turn it on explicitly for local runs only.
+      ALLOW_PRIVATE_UPSTREAMS: "true"
+    ports:
+      - "127.0.0.1:4021:4021"
+
+  demo-server:
+    ports:
+      - "127.0.0.1:4022:4022"

@@ -1,0 +1,93 @@
+# Toolport on Docker Compose (Coolify "Docker Compose" build pack). See docs/deploy/coolify.md.
+# Ports are only exposed on the internal network; Coolify's proxy routes the public domains.
+# Local run with published ports: docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+# Variables come from .env next to this file (see .env.example) or from Coolify's environment UI.
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+      # Inlined into the browser bundle at build time. Never add NEXT_PUBLIC_E2E_SIGNER here.
+      args:
+        NEXT_PUBLIC_GATEWAY_URL: ${NEXT_PUBLIC_GATEWAY_URL:-http://localhost:4021}
+        NEXT_PUBLIC_STELLAR_NETWORK: ${NEXT_PUBLIC_STELLAR_NETWORK:-stellar:testnet}
+        NEXT_PUBLIC_STELLAR_RPC_URL: ${NEXT_PUBLIC_STELLAR_RPC_URL:-}
+        NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-}
+        NEXT_PUBLIC_REPO_URL: ${NEXT_PUBLIC_REPO_URL:-}
+        NEXT_PUBLIC_CLI_PATH: ${NEXT_PUBLIC_CLI_PATH:-}
+        NEXT_PUBLIC_CLI_NPM: ${NEXT_PUBLIC_CLI_NPM:-}
+    environment:
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    expose:
+      - "3000"
+    restart: unless-stopped
+    depends_on:
+      gateway:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: gateway
+    environment:
+      PORT: "4021"
+      PUBLIC_URL: ${PUBLIC_URL:-http://localhost:4021}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      STELLAR_NETWORK: ${STELLAR_NETWORK:-stellar:testnet}
+      STELLAR_RPC_URL: ${STELLAR_RPC_URL:-}
+      DATABASE_URL: ${DATABASE_URL:-file:/data/toolport.db}
+      DATABASE_AUTH_TOKEN: ${DATABASE_AUTH_TOKEN:-}
+      # Must be non-empty: the gateway reads it with `??`, so an empty value is not replaced by the default.
+      FACILITATOR_URL: ${FACILITATOR_URL:-https://channels.openzeppelin.com/x402/testnet}
+      FACILITATOR_API_KEY: ${FACILITATOR_API_KEY:-}
+      FACILITATOR_SECRET_KEY: ${FACILITATOR_SECRET_KEY:-}
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # Keep false in any deployment: sellers can register any upstream, so true is an SSRF into the host network.
+      ALLOW_PRIVATE_UPSTREAMS: ${ALLOW_PRIVATE_UPSTREAMS:-false}
+      # Dev only. Leave unset in deployments.
+      AUTH_DISABLED: ${AUTH_DISABLED:-}
+    volumes:
+      - gateway-data:/data
+    expose:
+      - "4021"
+    restart: unless-stopped
+    healthcheck:
+      # /api/health is always HTTP 200; healthy means the database answered.
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4021/api/health').then(r=>r.json()).then(j=>process.exit(j.database==='ok'?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+
+  demo-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: demo
+    environment:
+      PORT: "4022"
+      STELLAR_NETWORK: ${STELLAR_NETWORK:-stellar:testnet}
+      # Unset: a free upstream priced by the gateway. Set it (plus a facilitator) to charge directly.
+      PAY_TO: ${PAY_TO:-}
+    expose:
+      - "4022"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4022/').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 20s
+      retries: 3
+
+volumes:
+  gateway-data:
