@@ -1,5 +1,7 @@
+import { lookup as dnsLookup, type LookupAddress, type LookupOptions } from "node:dns";
 import { lookup } from "node:dns/promises";
 import { BlockList, isIP } from "node:net";
+import { Agent } from "undici";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 
@@ -14,7 +16,7 @@ export interface UpstreamTool {
 /** Connect to an upstream MCP server and list its tools. */
 export async function inspectUpstream(url: string): Promise<{ name?: string; tools: UpstreamTool[] }> {
   const client = new Client({ name: "stellarpay-gateway", version: "0.1.0" });
-  const transport = new StreamableHTTPClientTransport(new URL(url));
+  const transport = new StreamableHTTPClientTransport(new URL(url), { fetch: upstreamFetch });
   await client.connect(transport);
   try {
     const tools: UpstreamTool[] = [];
@@ -64,4 +66,36 @@ export async function assertPublicUpstream(url: string): Promise<void> {
   const host = hostname.replace(/^\[|\]$/g, "");
   const addresses = isIP(host) ? [host] : (await lookup(host, { all: true })).map((a) => a.address);
   if (addresses.some(isPrivateAddress)) throw new Error("Upstream resolves to a private or loopback address");
+}
+
+type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void;
+
+/** dns.lookup that fails when any address is private, so the check holds at connect time. */
+function publicOnlyLookup(hostname: string, options: LookupOptions, callback: LookupCallback) {
+  dnsLookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) return callback(err, []);
+    if (!addresses.length || addresses.some((a) => isPrivateAddress(a.address))) {
+      return callback(Object.assign(new Error(`Upstream ${hostname} resolves to a private or loopback address`), { code: "EPRIVATE" }), []);
+    }
+    if (options.all) callback(null, addresses);
+    else callback(null, addresses[0].address, addresses[0].family);
+  });
+}
+
+let dispatcher: Agent | undefined;
+
+/**
+ * Re-check every upstream connection's resolved address, not just the one seen at registration:
+ * otherwise a DNS record that flips to a private address after the check (rebinding) reaches the host's network.
+ */
+export function guardUpstreamConnections() {
+  dispatcher = new Agent({ connect: { lookup: publicOnlyLookup } });
+}
+
+/**
+ * Fetch for upstream MCP servers. Redirects are refused: a registered public server could
+ * otherwise bounce the gateway to internal addresses that were never checked.
+ */
+export function upstreamFetch(url: string | URL, init?: RequestInit): Promise<Response> {
+  return fetch(url, { ...init, redirect: "error", ...(dispatcher && { dispatcher }) } as RequestInit);
 }

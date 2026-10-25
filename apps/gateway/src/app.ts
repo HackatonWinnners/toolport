@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { StrKey } from "@stellar/stellar-sdk";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { Hono, type Context } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import {
@@ -85,6 +86,10 @@ export function createApp(deps: AppDeps) {
     }
   };
 
+  // Both route trees are public; cap request bodies so one request can't buffer unbounded memory.
+  const limit = bodyLimit({ maxSize: 1024 * 1024, onError: (c) => c.json({ error: "Request body too large" }, 413) });
+  app.use("/api/*", limit);
+  app.use("/v1/*", limit);
   app.use(
     "/api/*",
     cors({ origin: deps.webOrigins ?? "*", allowHeaders: ["Authorization", "Content-Type"], credentials: false }),

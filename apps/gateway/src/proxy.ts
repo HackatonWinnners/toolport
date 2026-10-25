@@ -12,6 +12,7 @@ import type { Db } from "./db/index.js";
 import { calls, tools, type CallStatus, type ServerRow, type ToolRow } from "./db/schema.js";
 import { findResponse, isRequest, rpcError, rpcResult, type JsonRpcRequest, type JsonRpcResponse } from "./jsonrpc.js";
 import type { PaymentEngine } from "./payments.js";
+import { upstreamFetch } from "./upstream.js";
 
 const FORWARD_REQUEST_HEADERS = ["accept", "content-type", "mcp-session-id", "mcp-protocol-version", "last-event-id"];
 const FORWARD_RESPONSE_HEADERS = ["content-type", "mcp-session-id", "cache-control"];
@@ -57,7 +58,7 @@ async function forward(ctx: ProxyContext, body: string | undefined): Promise<Res
     if (value) headers.set(name, value);
   }
   if (!headers.has("accept")) headers.set("accept", "application/json, text/event-stream");
-  return fetch(ctx.server.upstreamUrl, {
+  return upstreamFetch(ctx.server.upstreamUrl, {
     method: ctx.request.method,
     headers,
     body: ctx.request.method === "GET" || ctx.request.method === "HEAD" ? undefined : body,
