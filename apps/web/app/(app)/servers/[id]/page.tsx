@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button, Card, Code, ErrorNote, Stat, UrlRow } from "@/components/ui";
 import { api, claudeDesktopConfig, EXPLORER, short, usd, type Call, type Server, type Stats, type Tool } from "@/lib/api";
 import { useSession } from "@/lib/session";
+import { ServerPageSkeleton } from "@/components/brand/Skeleton";
 
 const STATUS_STYLE: Record<Call["status"], string> = {
   paid: "text-good",
@@ -48,7 +49,7 @@ export default function ServerPage() {
     return () => clearInterval(timer);
   }, [load]);
 
-  if (!server) return error ? <ErrorNote message={error} /> : <p className="text-muted">Loading…</p>;
+  if (!server) return error ? <ErrorNote message={error} /> : <ServerPageSkeleton />;
   const isOwner = server.owner === address && !!token;
 
   return (

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { MppCatalog } from "@/components/catalog/MppCatalog";
 import { Code, ErrorNote, UrlRow } from "@/components/ui";
 import { api, claudeDesktopConfig, short, usd, type Server } from "@/lib/api";
+import { CatalogSkeleton } from "@/components/brand/Skeleton";
 
 export default function CatalogPage() {
   const [servers, setServers] = useState<Server[] | null>(null);
@@ -55,7 +56,7 @@ export default function CatalogPage() {
       />
 
       <ErrorNote message={error} />
-      {servers === null && !error && <p className="text-muted">Loading…</p>}
+      {servers === null && !error && <CatalogSkeleton />}
       {servers?.length === 0 && (
         <p className="text-muted">
           No listed servers yet.{" "}

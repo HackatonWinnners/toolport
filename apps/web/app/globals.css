@@ -42,3 +42,48 @@ body {
   outline: 2px solid var(--color-good);
   outline-offset: 2px;
 }
+
+/* Looping logo motion for <Loader/> (design/toolport/Logo-Motion.dc.html, sped up to 2.4 s). */
+@keyframes tp-loop-a {
+  0%, 18% { transform: translateX(9px); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  50%, 86% { transform: none; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  97%, 100% { transform: translateX(9px); }
+}
+@keyframes tp-loop-b {
+  0%, 18% { transform: translateX(-9px); animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  50%, 86% { transform: none; animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1); }
+  97%, 100% { transform: translateX(-9px); }
+}
+@keyframes tp-loop-l {
+  0%, 49% { opacity: 0; }
+  52%, 84% { opacity: 1; }
+  86%, 100% { opacity: 0; }
+}
+.tp-loop-a { animation: tp-loop-a 2.4s linear infinite; }
+.tp-loop-b { animation: tp-loop-b 2.4s linear infinite; }
+.tp-loop-l { animation: tp-loop-l 2.4s linear infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .tp-loop-a, .tp-loop-b, .tp-loop-l { animation: none; }
+}
+
+/* Skeleton blocks: a soft sweep in the theme's own tones. */
+@keyframes tp-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.tp-skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-raised);
+}
+.tp-skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-fg) 7%, transparent), transparent);
+  animation: tp-shimmer 1.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tp-skel::after { animation: none; }
+}

@@ -9,6 +9,7 @@ import { catalogFrom, invoke, quote, refusal, searchCatalog, type CatalogTool, t
 import { RunsAside } from "./RunsAside";
 import { Progress, ResultCard, type Attempt } from "./RunView";
 import { ArgsCard, ToolOptions } from "./ToolPicker";
+import { ToolListSkeleton } from "@/components/brand/Skeleton";
 
 const SUGGESTIONS = ["swap XLM for USDC", "account balances", "ping"];
 
@@ -258,7 +259,7 @@ export function Playground() {
                   </button>
                 ))}
               </div>
-              {!servers && <p className="text-[13px] text-muted">Loading the catalog…</p>}
+              {!servers && <ToolListSkeleton />}
             </section>
           )}
 

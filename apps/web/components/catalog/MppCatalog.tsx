@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Code } from "@/components/ui";
+import { ApiGridSkeleton } from "@/components/brand/Skeleton";
 
 // MPP Router's paid APIs on Stellar mainnet, from public/catalog/mpprouter.json (scripts/import-mpprouter.mjs).
 // The browser playground runs on testnet, so these are bought by an agent through the router.
@@ -58,7 +59,7 @@ export function MppCatalog({ query }: { query: string }) {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="max-w-2xl space-y-2">
           <h2 id="mpp-h" className="text-2xl font-semibold tracking-[-0.03em] text-fg">
-            {services ? services.length : "…"} paid APIs from MPP Router
+            {services ? `${services.length} paid APIs` : "Paid APIs"} from MPP Router
           </h2>
           <p className="text-[15px] leading-relaxed text-fg-soft">
             Search, LLMs, market data, maps, scraping and more, paid per request in USDC on Stellar mainnet. Your agent
@@ -99,7 +100,7 @@ export function MppCatalog({ query }: { query: string }) {
         </div>
       )}
 
-      {services === null && <p className="text-muted">Loading…</p>}
+      {services === null && <ApiGridSkeleton caption="Loading MPP Router APIs" />}
       {services && visible.length === 0 && <p className="text-muted">No MPP Router API matches.</p>}
 
       <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
