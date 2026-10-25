@@ -13,7 +13,7 @@ export interface BridgeOptions extends SpendLimits {
   verifyReceipts?: boolean;
 }
 
-const log = (...args: unknown[]) => console.error("[stellarpay]", ...args);
+const log = (...args: unknown[]) => console.error("[toolport]", ...args);
 
 /**
  * Expose one or more remote (paid) MCP servers as a single local stdio MCP server.

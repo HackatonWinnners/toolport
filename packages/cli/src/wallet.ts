@@ -32,7 +32,7 @@ export async function saveWallet(wallet: StoredWallet) {
 export async function resolveSecret(flag?: string): Promise<string> {
   const secret = flag ?? process.env.STELLAR_SECRET_KEY ?? (await loadWallet())?.secretKey;
   if (!secret) {
-    throw new Error("No wallet. Run `stellarpay wallet create`, or pass --secret / STELLAR_SECRET_KEY.");
+    throw new Error("No wallet. Run `toolport wallet create`, or pass --secret / STELLAR_SECRET_KEY.");
   }
   Keypair.fromSecret(secret); // validate
   return secret;

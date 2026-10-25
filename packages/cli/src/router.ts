@@ -12,7 +12,7 @@ export async function runRouter(options: CatalogOptions & SpendLimits & { secret
   const closed=new Promise<void>((resolve)=>{finish=resolve;});
   server.server.onclose=()=>finish();
   await server.connect(new StdioServerTransport());
-  console.error("[stellarpay] discovery MCP ready; persistent budget",JSON.stringify(await router.budget()));
+  console.error("[toolport] discovery MCP ready; persistent budget",JSON.stringify(await router.budget()));
   const stop=()=>{void server.close();};
   process.once("SIGINT",stop);process.once("SIGTERM",stop);
   try {await closed;} finally {process.off("SIGINT",stop);process.off("SIGTERM",stop);}

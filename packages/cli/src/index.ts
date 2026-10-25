@@ -142,14 +142,14 @@ async function walletCommand(sub: string | undefined) {
       createdAt: new Date().toISOString(),
     });
     out(`Saved to ${path} (mode 600)`);
-    if (!values.usdc) out("Get test USDC at https://faucet.circle.com (Stellar testnet) or run `stellarpay wallet buy-usdc 5`.");
+    if (!values.usdc) out("Get test USDC at https://faucet.circle.com (Stellar testnet) or run `toolport wallet buy-usdc 5`.");
     return;
   }
   const secret = await resolveSecret(values.secret);
   const address = Keypair.fromSecret(secret).publicKey();
   if (sub === "buy-usdc") {
     const amount = positionals[2];
-    if (!amount) throw new Error("Usage: stellarpay wallet buy-usdc <amount>");
+    if (!amount) throw new Error("Usage: toolport wallet buy-usdc <amount>");
     const status = await getAccountStatus(address, net);
     if (!status.hasUsdcTrustline) await addUsdcTrustline(secret, net);
     const hash = await buyUsdcWithXlm(secret, amount, net);
@@ -169,7 +169,7 @@ async function walletCommand(sub: string | undefined) {
 }
 
 async function toolsCommand(url: string | undefined) {
-  if (!url) throw new Error("Usage: stellarpay tools <url>");
+  if (!url) throw new Error("Usage: toolport tools <url>");
   const c = await client(url);
   const { tools } = await c.listTools();
   for (const tool of tools) {
@@ -180,7 +180,7 @@ async function toolsCommand(url: string | undefined) {
 }
 
 async function callCommand(url: string | undefined, tool: string | undefined, rawArgs: string | undefined) {
-  if (!url || !tool) throw new Error("Usage: stellarpay call <url> <tool> [json-args]");
+  if (!url || !tool) throw new Error("Usage: toolport call <url> <tool> [json-args]");
   const c = await client(url);
   const started = Date.now();
   try {
@@ -192,7 +192,7 @@ async function callCommand(url: string | undefined, tool: string | undefined, ra
         `\npaid ${formatUsd((result as { amountUnits?: bigint }).amountUnits ?? 0n)} from ${c.address} in ${((Date.now() - started) / 1000).toFixed(1)}s` +
           (r.success ? `\n${explorerTxUrl(r.transaction, c.network)}` : `\nsettlement failed: ${r.errorReason}`) +
           ((result as { paymentState?: string }).paymentState === "unverified"
-            ? "\nnot yet visible on-chain: kept as pending; run `stellarpay budget --reconcile` later"
+            ? "\nnot yet visible on-chain: kept as pending; run `toolport budget --reconcile` later"
             : ""),
       );
     }
@@ -257,7 +257,7 @@ async function main() {
     }
     case "connect": {
       const urls = (values.urls ?? process.env.STELLARPAY_URLS ?? a ?? "").split(",").map((u) => u.trim()).filter(Boolean);
-      if (!urls.length) throw new Error("Usage: stellarpay connect --urls <url1,url2>");
+      if (!urls.length) throw new Error("Usage: toolport connect --urls <url1,url2>");
       const secretKey = await resolveSecret(values.secret);
       return runBridge({
         urls,
