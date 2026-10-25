@@ -12,6 +12,11 @@ const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(publ
 const configuredSecret = process.env.SESSION_SECRET;
 const weakSecret = !configuredSecret || configuredSecret.length < 32 || /change-me/.test(configuredSecret);
 
+// AUTH_DISABLED accepts any "Bearer G..." as that seller (who could then redirect payouts), so it only runs locally.
+if (process.env.AUTH_DISABLED === "true" && !isLocal) {
+  throw new Error(`AUTH_DISABLED=true is for local development only; PUBLIC_URL is ${publicUrl}`);
+}
+
 export const env = {
   port: Number(process.env.PORT ?? 4021),
   publicUrl,

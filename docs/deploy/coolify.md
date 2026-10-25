@@ -47,7 +47,7 @@ Coolify lists every `${VAR}` from the compose file. Set these and leave the rest
 | `FACILITATOR_URL` | facilitator endpoint, for example `https://channels.openzeppelin.com/x402/testnet` |
 | `FACILITATOR_API_KEY` | secret, if the facilitator needs one |
 | `ALLOW_PRIVATE_UPSTREAMS` | `false` (see below) |
-| `AUTH_DISABLED` | leave unset |
+| `AUTH_DISABLED` | never set it: the gateway refuses to start with it on a non-localhost `PUBLIC_URL` |
 
 `FACILITATOR_SECRET_KEY` (an in-process facilitator) and `STELLAR_RPC_URL` are optional;
 `STELLAR_RPC_URL` is required for `stellar:pubnet`. `DATABASE_AUTH_TOKEN` is only for a remote

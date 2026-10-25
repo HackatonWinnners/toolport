@@ -54,8 +54,6 @@ services:
       SESSION_SECRET: ${SESSION_SECRET:-}
       # Keep false in any deployment: sellers can register any upstream, so true is an SSRF into the host network.
       ALLOW_PRIVATE_UPSTREAMS: ${ALLOW_PRIVATE_UPSTREAMS:-false}
-      # Dev only. Leave unset in deployments.
-      AUTH_DISABLED: ${AUTH_DISABLED:-}
     volumes:
       - gateway-data:/data
     expose:
