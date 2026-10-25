@@ -1,13 +1,13 @@
 "use client";
 
-// Shared buyer state for the app shell: wallet and budget. WP-0 stub with the final shape;
-// WP-B moves the playground onto it.
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
+// Shared buyer state for the app shell: the connected wallet and the local budget with its runs.
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { api, NETWORK, type AccountStatus } from "./api";
 import { loadBudget, saveBudget, type Budget, type Run } from "./buyer";
 import { connectWallet as connectSigner } from "./signer";
 
 const TESTNET_PASSPHRASE = "Test SDF Network ; September 2015";
+const PUBNET_PASSPHRASE = "Public Global Stellar Network ; September 2015";
 
 export interface AgentState {
   wallet: { address: string; account?: AccountStatus; wrongNetwork?: boolean } | null;
@@ -20,6 +20,8 @@ export interface AgentState {
 }
 
 const AgentContext = createContext<AgentState | null>(null);
+
+const fetchAccount = (address: string) => api<AccountStatus>(`/api/accounts/${address}`).catch(() => undefined);
 
 export function AgentProvider({ children }: { children: ReactNode }) {
   const [wallet, setWallet] = useState<AgentState["wallet"]>(null);
@@ -37,33 +39,39 @@ export function AgentProvider({ children }: { children: ReactNode }) {
     setError(null);
     try {
       const { address, networkPassphrase } = await connectSigner();
-      const wrongNetwork = NETWORK === "stellar:testnet" && networkPassphrase !== TESTNET_PASSPHRASE;
-      const account = await api<AccountStatus>(`/api/accounts/${address}`).catch(() => undefined);
-      setWallet({ address, account, wrongNetwork });
+      const expected = NETWORK === "stellar:pubnet" ? PUBNET_PASSPHRASE : TESTNET_PASSPHRASE;
+      const wrongNetwork = networkPassphrase !== expected;
+      setWallet({ address, wrongNetwork });
+      const account = await fetchAccount(address);
+      setWallet((w) => (w?.address === address ? { ...w, account } : w));
     } catch (e) {
       setError((e as Error).message);
     }
   }, []);
 
   const refreshAccount = useCallback(async () => {
-    if (!wallet) return;
-    const account = await api<AccountStatus>(`/api/accounts/${wallet.address}`).catch(() => wallet.account);
-    setWallet({ ...wallet, account });
-  }, [wallet]);
+    const address = wallet?.address;
+    if (!address) return;
+    const account = await fetchAccount(address);
+    if (account) setWallet((w) => (w?.address === address ? { ...w, account } : w));
+  }, [wallet?.address]);
 
-  const recordRun = useCallback(
-    (run: Run) => {
-      if (!budget) return;
-      updateBudget({ ...budget, spentUnits: budget.spentUnits + run.amountUnits, runs: [run, ...budget.runs].slice(0, 20) });
-    },
-    [budget, updateBudget],
+  // Functional update: a run can finish after other budget edits, so never write back a stale copy.
+  const recordRun = useCallback((run: Run) => {
+    setBudget((current) => {
+      if (!current) return current;
+      const next = { ...current, spentUnits: current.spentUnits + run.amountUnits, runs: [run, ...current.runs].slice(0, 50) };
+      saveBudget(next);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo(
+    () => ({ wallet, connectWallet, refreshAccount, budget, updateBudget, recordRun, error }),
+    [wallet, connectWallet, refreshAccount, budget, updateBudget, recordRun, error],
   );
 
-  return (
-    <AgentContext.Provider value={{ wallet, connectWallet, refreshAccount, budget, updateBudget, recordRun, error }}>
-      {children}
-    </AgentContext.Provider>
-  );
+  return <AgentContext.Provider value={value}>{children}</AgentContext.Provider>;
 }
 
 export function useAgent(): AgentState {

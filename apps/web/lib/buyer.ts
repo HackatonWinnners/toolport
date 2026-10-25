@@ -8,7 +8,7 @@ import { x402MCPClient } from "@x402/mcp";
 import { getUsdcAddress } from "@x402/stellar";
 import { ExactStellarScheme } from "@x402/stellar/exact/client";
 import { NETWORK, type Server } from "./api";
-import { getSigner } from "./signer";
+import { getSigner, type AuthEntrySigner } from "./signer";
 
 const RPC_URL = process.env.NEXT_PUBLIC_STELLAR_RPC_URL ?? "https://soroban-testnet.stellar.org";
 const USDC = getUsdcAddress(NETWORK as `${string}:${string}`);
@@ -41,6 +41,8 @@ export interface Run {
   status: "paid" | "free" | "refused" | "failed";
   text: string;
   tx?: string;
+  /** Seller's server name, for the receipt and activity table. */
+  server?: string;
 }
 
 export interface Budget {
@@ -130,16 +132,31 @@ export async function quote(tool: CatalogTool, args: Record<string, unknown>): P
   }
 }
 
+export interface InvokeHooks {
+  /** The wallet returned the signature for the USDC transfer. */
+  onSigned?(): void;
+}
+
 /** Call a tool, paying with Freighter if it's priced, but never above the budget. */
 export async function invoke(
   tool: CatalogTool,
   args: Record<string, unknown>,
   address: string,
   budget: Budget,
+  hooks: InvokeHooks = {},
 ): Promise<Omit<Run, "id" | "at" | "tool" | "args">> {
   let approvedUnits = 0;
   let denial: string | null = null;
-  const payments = new x402Client().register(NETWORK as `${string}:${string}`, new ExactStellarScheme(await getSigner(address), { url: RPC_URL }));
+  const wallet = await getSigner(address);
+  const signer: AuthEntrySigner = {
+    address: wallet.address,
+    signAuthEntry: async (preimageXdr, opts) => {
+      const signed = await wallet.signAuthEntry(preimageXdr, opts);
+      hooks.onSigned?.();
+      return signed;
+    },
+  };
+  const payments = new x402Client().register(NETWORK as `${string}:${string}`, new ExactStellarScheme(signer, { url: RPC_URL }));
   const mcp = new x402MCPClient(new Client({ name: "stellarpay-web", version: "0.1.0" }), payments, {
     autoPayment: true,
     onPaymentRequested: ({ paymentRequired }) => {
