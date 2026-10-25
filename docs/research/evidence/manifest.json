@@ -1,0 +1,48 @@
+{
+  "observedDate": "2026-10-25",
+  "note": "Snapshots of public responses and operator-published verification records. Operator claims are not independent paid end-to-end verification. No browser cookies, authorization headers, private keys or local wallet databases are included.",
+  "files": [
+    {
+      "file": "frames-tools-spec.json",
+      "source": "https://api.frames.ag/v1/tools/spec",
+      "sha256": "df58a232c8e69fa5f90ed864bec73953bd11847becd580edf8945ac2be247750",
+      "bytes": 9504
+    },
+    {
+      "file": "frames-models.json",
+      "source": "https://api.frames.ag/v1/models",
+      "sha256": "7d610b7e42621e3e9afaaa84a8a0657de89d1124b5376bb6b8dcb11af0b6d7f2",
+      "bytes": 299
+    },
+    {
+      "file": "rail402-supported.json",
+      "source": "https://testnet.rail402.dev/supported",
+      "sha256": "9f3146ad58079557dae25a772efcb27aade91de9c4182a8528dab0c99420a4eb",
+      "bytes": 570
+    },
+    {
+      "file": "rail402-live-resources.json",
+      "source": "https://testnet.rail402.dev/discovery/resources?limit=5",
+      "sha256": "b7df3cd1a63d3c1c504eb814a073e440878e73cd3dd8d0b91e5126500dadd0b9",
+      "bytes": 10885
+    },
+    {
+      "file": "mpprouter-catalog.json",
+      "source": "https://apiserver.mpprouter.dev/v1/services/catalog",
+      "sha256": "956ff34c829755b879758e24934f568cffc0825c12a33b0317fab47ebd830cd2",
+      "bytes": 1333501
+    },
+    {
+      "file": "mpprouter-supported.json",
+      "source": "https://apiserver.mpprouter.dev/x402/supported",
+      "sha256": "2036fb2b0491f19d24a83de1822f2380baf4817e0cf0edd2e70685675216375f",
+      "bytes": 1414
+    },
+    {
+      "file": "mpprouter-verified-runs.json",
+      "source": "https://github.com/mpprouter/rozo-mpprouter/blob/main/docs/verified-runs.json",
+      "sha256": "2696fd350f0b9c860c9e2674fa68ca47d781fd50212c0732e93a88a90c726aa3",
+      "bytes": 39728
+    }
+  ]
+}

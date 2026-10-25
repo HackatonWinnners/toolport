@@ -1,0 +1,52 @@
+{
+  "kinds": [
+    {
+      "x402Version": 2,
+      "scheme": "exact",
+      "network": "stellar:pubnet",
+      "extra": {
+        "pay_to": "GDK3AVW3YE6UL3J4WLNKBMP65KSY32YPUKIOC6PXW65XJ3LEG3YIDXXB",
+        "asset": "USDC",
+        "facilitator": "self",
+        "settlement": "pooled",
+        "fees_sponsored": true
+      }
+    },
+    {
+      "x402Version": 2,
+      "scheme": "exact",
+      "network": "stellar:pubnet",
+      "extra": {
+        "pay_to": "GDNJXCKW7ZM7GEEVP674TWPU26YJNBQ2FI4ZIPRKTPTNUEJMDHFJWWRL",
+        "asset": "USDC",
+        "operator": "agent402-tools",
+        "operator_name": "Agent402",
+        "settlement": "direct",
+        "facilitator": "self",
+        "fees_sponsored": true
+      }
+    },
+    {
+      "x402Version": 2,
+      "scheme": "exact",
+      "network": "stellar:pubnet",
+      "extra": {
+        "pay_to": "GDMBDCDO4E77BUX3U6MKUQLPCDOWRKREUDWB54WIATV3LFFQMI2AZ6BT",
+        "asset": "USDC",
+        "operator": "stellar-indexer",
+        "operator_name": "Stellar Indexer (Creit Tech)",
+        "settlement": "direct",
+        "facilitator": "self",
+        "fees_sponsored": true
+      }
+    }
+  ],
+  "extensions": [],
+  "signers": {
+    "stellar:pubnet": [
+      "GDK3AVW3YE6UL3J4WLNKBMP65KSY32YPUKIOC6PXW65XJ3LEG3YIDXXB",
+      "GDNJXCKW7ZM7GEEVP674TWPU26YJNBQ2FI4ZIPRKTPTNUEJMDHFJWWRL",
+      "GDMBDCDO4E77BUX3U6MKUQLPCDOWRKREUDWB54WIATV3LFFQMI2AZ6BT"
+    ]
+  }
+}
