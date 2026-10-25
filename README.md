@@ -1,41 +1,180 @@
-# StellarPay MCP
+# Toolport
 
-**Pay-per-call MCP tools, settled in USDC on Stellar.** An MCP server owner sets a price per tool; any AI agent (Claude Desktop, Cursor, your own) pays for each call with a Soroban auth entry and gets the result about 5 seconds later. No API keys, no subscriptions, and the agent never needs XLM for fees.
+**Your agent pays per tool call, in USDC on Stellar, under a hard budget.** Toolport lets any AI agent (Claude Desktop, Cursor, your own) find paid MCP and HTTP tools, see the exact price before it buys, and pay for each call over [x402](https://github.com/coinbase/x402) with a Soroban auth entry. Every call is checked against a per-call cap and a persistent session budget before anything is signed. No API keys, no subscriptions, and the agent never needs XLM for fees.
 
-It is the Stellar counterpart of [MCPay](https://github.com/microchipgnu/MCPay), built on the official x402 packages (`@x402/stellar`, `@x402/mcp`) and the [x402 MCP transport](https://github.com/coinbase/x402/blob/main/specs/transports-v2/mcp.md). Built for [Hack Meridian](https://www.hackmeridian.com/) 2026, Genesis path, Stellar Composed track.
+- **Buy:** one discovery MCP (`toolport router`) searches the Toolport registry, curated JSON manifests and [Rail402](https://rail402.dev)'s Bazaar of paid APIs and MCP tools, then quotes and pays under your caps.
+- **Sell:** a server owner registers an MCP server with the Toolport gateway, sets a price per tool, and is paid in USDC for every successful call.
+
+Toolport is the Stellar counterpart of [MCPay](https://github.com/microchipgnu/MCPay), built on the official x402 packages (`@x402/stellar`, `@x402/mcp`) and the [x402 MCP transport](https://github.com/coinbase/x402/blob/main/specs/transports-v2/mcp.md). Built for [Hack Meridian](https://www.hackmeridian.com/) 2026, Genesis path, Stellar Composed track.
+
+> The project was renamed from StellarPay MCP. The workspace packages are still `@stellarpay/*`, the price meta key is still `stellarpay/price`, and the wallet lives in `~/.stellarpay/` (`STELLARPAY_WALLET`). The CLI installs as `toolport`, with `stellarpay` kept as an alias.
+
+## Live deployment (Stellar testnet)
+
+| | URL |
+| --- | --- |
+| Web app (landing, playground, catalog, seller dashboard) | `https://toolport.<domain>` |
+| Gateway API | `https://api.toolport.<domain>/api/health` |
+| Paid MCP endpoint (Stellar Oracle) | `https://api.toolport.<domain>/v1/mcp/<serverId>` |
+| Upstream demo server | `https://oracle.toolport.<domain>` |
+
+Placeholders: they get filled in after the Coolify deploy. The earlier Vercel deployment is listed under [Legacy: Vercel](#legacy-vercel).
+
+## Quickstart: local development
+
+Requires Node 22+.
+
+```bash
+npm ci
+```
+
+**1. Env files.** Each app reads its own env file. Copy the examples and fill them in. The real files are git-ignored, so keep secrets out of commits.
+
+```bash
+cp apps/gateway/.env.example apps/gateway/.env          # read by `npm run dev:gateway`
+cp apps/demo-server/.env.example apps/demo-server/.env  # read by `npm run dev:demo`
+cp apps/web/.env.example apps/web/.env.local            # read by Next.js
+```
+
+The gateway needs a facilitator, so pick one in `apps/gateway/.env`:
+- Rail402's free hosted testnet facilitator, no key needed: `FACILITATOR_URL=https://testnet.rail402.dev`.
+- OpenZeppelin: `FACILITATOR_URL=https://channels.openzeppelin.com/x402/testnet`, plus a `FACILITATOR_API_KEY` from <https://channels.openzeppelin.com/testnet/gen>.
+- In-process: `FACILITATOR_SECRET_KEY=S...` set to any Friendbot-funded account.
+
+Set `SESSION_SECRET` with `openssl rand -hex 32`. Without it, sessions reset whenever the gateway restarts.
+
+**2. Wallets.** `wallet create` makes a keypair, funds it with Friendbot, adds the USDC trustline and, with `--usdc`, buys test USDC on the testnet DEX. Never commit wallet files.
+
+```bash
+STELLARPAY_WALLET=.wallets/provider.json npm run cli -- wallet create   # provider (seller) wallet
+npm run cli -- wallet create --usdc 5                                   # agent wallet, saved to ~/.stellarpay/wallet.json
+```
+
+**3. Run the stack** in three terminals:
+
+```bash
+npm run dev:demo      # Stellar Oracle upstream on :4022
+npm run dev:gateway   # gateway on :4021
+npm run dev:web       # web app on :3000
+```
+
+**4. Seed the gateway.** The script signs in as the provider wallet (SEP-53, the same message Freighter signs), then registers and prices the demo server. You can run it more than once: an upstream that is already registered gets reused.
+
+```bash
+STELLARPAY_WALLET=.wallets/provider.json npx tsx scripts/seed-gateway.ts http://localhost:4021 http://localhost:4022/mcp
+```
+
+It prints the paid MCP URL. You can also register servers in the web app under **Sell** (`/dashboard`), signing in with Freighter.
+
+**5. Pay for a call:**
+
+```bash
+npm run cli -- tools http://localhost:4021/v1/mcp/<serverId>
+npm run cli -- call http://localhost:4021/v1/mcp/<serverId> dex_best_path '{"from":"XLM","to":"USDC","amount":"100"}' --max-per-call 0.05
+```
+
+Web routes: `/` landing, `/playground` (find a tool, price it, run it), `/catalog` (public registry), `/activity`, `/dashboard` (**Sell**: register and price servers), `/servers/[id]` (server detail).
+
+## Quickstart: Docker Compose
+
+The repo's `Dockerfile` has three targets (`web`, `gateway`, `demo`), and `docker-compose.yml` wires them together. To run them locally with published ports:
+
+```bash
+cp .env.example .env   # fill in SESSION_SECRET and the facilitator settings
+docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+```
+
+That serves the web app on `http://localhost:3000`, the gateway on `http://localhost:4021` and the demo server on `http://localhost:4022`, all bound to 127.0.0.1. Inside the gateway container, `localhost` is the gateway itself, so seed the demo server by its service name:
+
+```bash
+STELLARPAY_WALLET=.wallets/provider.json npx tsx scripts/seed-gateway.ts http://localhost:4021 http://demo-server:4022/mcp
+```
+
+For this, `docker-compose.local.yml` turns on `ALLOW_PRIVATE_UPSTREAMS`. Only use that file on your own machine.
+
+## The `toolport` command
+
+During development, `npm run cli -- <command>` runs the CLI straight from the TypeScript source. To get the `toolport` command on your PATH from this checkout (after `npm ci`):
+
+```bash
+npm link -w packages/cli   # global symlink to the workspace; installs the `toolport` and `stellarpay` bins
+toolport --help
+```
+
+Run it from the repo root. With `-w`, `npm link` links the named workspace rather than the root package. Use `npm unlink -g stellarpay` to remove it (`stellarpay` is the CLI package's name). The CLI hasn't been published to npm yet.
+
+| Command | Purpose |
+| --- | --- |
+| `toolport wallet create [--usdc 5]` | New testnet wallet: keypair, Friendbot XLM, USDC trustline, optional test USDC |
+| `toolport wallet show` | Address, XLM and USDC balances |
+| `toolport wallet buy-usdc <amount>` | Buy USDC with XLM on the DEX (testnet helper) |
+| `toolport tools <url>` | List the tools and prices of an MCP server |
+| `toolport call <url> <tool> [json-args]` | Call one tool, paying if needed |
+| `toolport router [--gateway <url>] [--manifest <path>] [--bazaar <url>]` | Discovery MCP with quotes, durable runs and budgets |
+| `toolport connect --urls <a,b>` | Stdio MCP bridge to fixed paid servers |
+| `toolport budget [--reconcile] [--release <id>]` | Session spend and held payments |
+
+Common options: `--secret`, `--network stellar:testnet|stellar:pubnet`, `--rpc-url`, `--max-per-call <usd>`, `--budget <usd>`, `--session <name>`, `--state-db <path>`, `--allow-local`. Run `toolport --help` for the full list.
 
 ## Agent discovery router
 
-One MCP can search tools across the StellarPay registry, [Rail402](https://rail402.dev)'s Bazaar of paid APIs and MCP tools, and a curated JSON manifest. The agent inspects a schema and quote, then buys a call under an explicit cap. HTTP and MCP tools use the same StellarPay USDC client and persistent wallet budget. For Bazaar listings, search uses Rail402's own ranking (BM25F + embeddings), so "what's the weather in Lisbon" finds a weather API that shares none of those words; it falls back to word matching if Rail402 is unreachable.
+One MCP searches tools across the Toolport registry, Rail402's Bazaar and curated JSON manifests. The agent reads a schema and a quote, then buys a call under an explicit cap. HTTP and MCP tools go through the same USDC client and persistent wallet budget. For Bazaar listings, search uses Rail402's own ranking (BM25F plus embeddings), so "what's the weather in Lisbon" finds a weather API that shares none of those words. If Rail402 can't be reached, search falls back to word matching.
 
 ```bash
-# Use an existing funded testnet wallet. On testnet the defaults are the deployed StellarPay
-# registry and Rail402's free hosted Bazaar (https://testnet.rail402.dev).
-npm run cli -- router --max-per-call 0.05 --budget 1 --session hackmeridian
-# Local development / without Rail402:
-npm run cli -- router --gateway http://localhost:4021 --allow-local --bazaar ""
+# On testnet, the defaults are the hosted registry (or TOOLPORT_GATEWAY_URL) and Rail402's free
+# hosted Bazaar (https://testnet.rail402.dev). Use an existing funded testnet wallet.
+toolport router --max-per-call 0.05 --budget 1 --session hackmeridian
+# Point it at your own gateway:
+TOOLPORT_GATEWAY_URL=https://api.toolport.<domain> toolport router --max-per-call 0.05 --budget 1
+# Local development, without Rail402:
+toolport router --gateway http://localhost:4021 --allow-local --bazaar ""
 ```
 
-Connect an MCP agent using the local CLI checkout:
+The router's registry default is `--gateway`, then `TOOLPORT_GATEWAY_URL`, then the hosted testnet registry built into the CLI. Today that built-in registry is the legacy Vercel gateway.
+
+### Claude Desktop
+
+Add the router to `claude_desktop_config.json`. If you ran `npm link -w packages/cli` and Claude Desktop can see your shell's PATH:
 
 ```json
 {
   "mcpServers": {
-    "stellarpay": {
-      "command": "node",
-      "args": ["/absolute/path/to/stellarpay-mcp/packages/cli/bin/stellarpay.js", "router",
-               "--max-per-call", "0.05", "--budget", "1", "--session", "hackmeridian"]
+    "toolport": {
+      "command": "toolport",
+      "args": ["router", "--max-per-call", "0.05", "--budget", "1", "--session", "hackmeridian"],
+      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.<domain>" }
     }
   }
 }
 ```
 
+GUI apps often start without your shell PATH (for example under nvm). In that case, use node with the bin's absolute path:
+
+```json
+{
+  "mcpServers": {
+    "toolport": {
+      "command": "node",
+      "args": ["/absolute/path/to/repo/packages/cli/bin/stellarpay.js", "router",
+               "--max-per-call", "0.05", "--budget", "1", "--session", "hackmeridian"],
+      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.<domain>" }
+    }
+  }
+}
+```
+
+Then ask: *"What's the best path to swap 100 XLM into USDC right now?"*
+
+To expose fixed paid servers directly instead of the router, use `connect`: `"args": ["connect", "--urls", "https://api.toolport.<domain>/v1/mcp/<serverId>", "--max-per-call", "0.05", "--budget", "1"]`.
+
+### Router tools
+
 | Tool | Purpose |
 | --- | --- |
-| `search_tools` | Search configured catalogs; see unavailable/stale sources |
-| `get_tool` | Read full descriptor and exact input schema |
+| `search_tools` | Search the configured catalogs; shows sources that are unavailable or stale |
+| `get_tool` | Read the full descriptor and exact input schema |
 | `probe_tool` | Get an unpaid price challenge; no signature or purchase |
-| `invoke_tool` | Execute using `id`, `args`, explicit `maxAmount` and `idempotencyKey` |
+| `invoke_tool` | Execute using `id`, `args`, an explicit `maxAmount` and an `idempotencyKey` |
 | `get_run` | Retrieve the stored result, payment receipt or error |
 | `get_budget` | Read settled, pending and remaining USDC |
 
@@ -50,58 +189,66 @@ Example paid invocation:
 }
 ```
 
-The same key retrieves the original run; changing its arguments/cap conflicts. A crashed `running` run is retained and is not automatically purchased again. `completed` means a successful transport response, not that an answer is correct. Probes send unpaid requests and should only be used for known read-only providers: a provider that makes an operation free can execute that initial request.
+Sending the same key again returns the original run. Reusing the key with different arguments or a different cap is a conflict. If a run crashes while `running`, it is kept and is not bought again automatically. `completed` means the transport returned a successful response, not that the answer is correct. Probes send unpaid requests, so only use them on providers you know are read-only: a provider that makes an operation free will execute that first request.
 
 ### Persistent budgets and receipts
 
-CLI `call`, `connect` and `router` now default to **0.05 USDC/call and 1 USDC/session**. State is stored next to the wallet at `agent.db` (override with `--state-db <path>`), scoped by wallet, network and `--session` name. Restarting resumes its spend; changing `--budget` or `--max-per-call` updates the limits but never resets spent or pending amounts. There is no automatic daily reset. To intentionally allocate a new budget, choose a new session; do not use that to bypass unresolved payments.
+CLI `call`, `connect` and `router` default to **0.05 USDC per call and 1 USDC per session**. State is stored next to the wallet in `agent.db` (override with `--state-db <path>`), scoped by wallet, network and `--session` name. A restart resumes the session's spend. Changing `--budget` or `--max-per-call` updates the limits but never resets spent or pending amounts, and there is no automatic daily reset. To give yourself a fresh budget on purpose, pick a new session name, but don't do that to get around unresolved payments.
 
-The store reserves atomically before signing. Lost responses and missing/invalid receipts keep a pending hold, including across restarts. These holds never expire on their own. CLI payments verify the successful transaction over RPC, including USDC contract, payer, recipient and amount, before recording settlement. If the provider reports a settled payment that RPC can't confirm yet, the agent still gets the paid result, and the amount stays pending with its transaction hash.
+The store reserves each call's price atomically before signing. A lost response or a missing or invalid receipt keeps the amount as a pending hold, including across restarts, and holds never expire on their own. Before recording a CLI payment as settled, the CLI checks the transaction over RPC: the USDC contract, payer, recipient and amount. If the provider reports a settlement that RPC can't confirm yet, the agent still gets the paid result, and the amount stays pending with its transaction hash.
 
 ```bash
-npm run cli -- budget                     # spend, pending, remaining and each open hold
-npm run cli -- budget --reconcile         # settle holds whose transaction now verifies on-chain
-npm run cli -- budget --release <hold-id> # you checked the wallet: this one was never paid
-``` SDK users can opt into `store` and `verifyReceipts: true`; otherwise the SDK retains an in-memory session and uses the provider receipt. These are client-side limits, not on-chain smart-account policies.
+toolport budget                     # spend, pending, remaining and each open hold
+toolport budget --reconcile         # settle holds whose transaction now verifies on-chain
+toolport budget --release <hold-id> # you checked the wallet: this one was never paid
+```
+
+SDK users can opt into `store` and `verifyReceipts: true`. Otherwise the SDK keeps an in-memory session and trusts the provider's receipt. These are client-side limits, not on-chain smart-account policies.
 
 ### External HTTP API examples (mainnet only)
 
-[`catalog/mpprouter.mainnet.json`](catalog/mpprouter.mainnet.json) contains curated Exa search and Firecrawl scrape descriptors. It is opt-in and filtered out on testnet:
+[`catalog/mpprouter.mainnet.json`](catalog/mpprouter.mainnet.json) holds curated Exa search and Firecrawl scrape descriptors. It is opt-in and filtered out on testnet:
 
 ```bash
 # Explicit mainnet configuration; use a dedicated funded wallet and a mainnet RPC.
-STELLAR_RPC_URL=https://YOUR_MAINNET_RPC npm run cli -- router \
+STELLAR_RPC_URL=https://YOUR_MAINNET_RPC toolport router \
   --network stellar:pubnet --manifest catalog/mpprouter.mainnet.json \
   --max-per-call 0.01 --budget 0.10 --session web-research
 ```
 
-Pass an absolute manifest path when configuring a desktop MCP client. HTTP arguments use `args.body`, `args.query` and `args.pathParams`; MCP arguments are passed directly to the tool. Prices come from fresh exact USDC x402 challenges, not catalog strings. MPP sessions/channels are not implemented; these examples use Router's x402 interface. Mainnet paid delivery has not been tested by this project. Do not import every catalog entry as a supported tool.
+When you configure a desktop MCP client, pass an absolute manifest path. HTTP arguments go in `args.body`, `args.query` and `args.pathParams`. MCP arguments go directly to the tool. Prices come from fresh exact USDC x402 challenges, not from catalog strings. MPP sessions and channels are not implemented; these examples use Router's x402 interface. This project hasn't tested paid delivery on mainnet. Don't import every catalog entry as a supported tool.
 
-Provider requests validate and pin DNS addresses, reject private networks and redirects, and use bounded responses/timeouts. `--allow-local` enables loopback for development; it does not enable arbitrary private subnets.
+Provider requests validate and pin DNS addresses, reject private networks and redirects, and use bounded responses and timeouts. `--allow-local` turns on loopback for development; it does not allow arbitrary private subnets.
 
-## Research
+## Environment variables
 
-[Research index](docs/research/README.md): Frames/MCPay mechanics, HackMeridian partners and materials, reusable components, MPP Router observations and source snapshots. Reports record their research date; this README describes the current implementation. Implementation and research were assisted by OpenAI Codex; external sources and dependencies are attributed in the reports and package manifests.
+Each app's `.env.example` documents its own variables. The root [`.env.example`](.env.example) is for Docker Compose.
 
-## Live demo (Stellar testnet)
-
-| | URL |
+| Service | Variables |
 | --- | --- |
-| Dashboard and registry | <https://stellarpay-web.vercel.app> |
-| Gateway API | <https://stellarpay-gateway-ten.vercel.app/api/health> |
-| Paid MCP endpoint (Stellar Oracle) | `https://stellarpay-gateway-ten.vercel.app/v1/mcp/srv_02148cae805b` |
-| Upstream demo server | <https://stellarpay-demo.vercel.app> |
+| Gateway | `PORT`, `PUBLIC_URL`, `STELLAR_NETWORK`, `STELLAR_RPC_URL`, `DATABASE_URL`, `DATABASE_AUTH_TOKEN`, `FACILITATOR_URL`, `FACILITATOR_API_KEY`, `FACILITATOR_SECRET_KEY`, `SESSION_SECRET`, `WEB_ORIGIN`, `ALLOW_PRIVATE_UPSTREAMS`, `AUTH_DISABLED` (dev only) |
+| Demo server | `PORT`, `STELLAR_NETWORK`, and optionally `PAY_TO` plus a facilitator |
+| Web, build time | `NEXT_PUBLIC_GATEWAY_URL`, `NEXT_PUBLIC_STELLAR_NETWORK`, `NEXT_PUBLIC_STELLAR_RPC_URL`, `NEXT_PUBLIC_DOCS_URL`, `NEXT_PUBLIC_REPO_URL`, `NEXT_PUBLIC_CLI_PATH`, `NEXT_PUBLIC_CLI_NPM`, `NEXT_PUBLIC_E2E_SIGNER` (local e2e only, never in a deployment) |
+| Web, runtime | `PORT`, `HOSTNAME` |
+| CLI | `TOOLPORT_GATEWAY_URL` (router registry override), `STELLARPAY_WALLET` (wallet file, default `~/.stellarpay/wallet.json`), `STELLAR_RPC_URL` |
 
-Try it from a terminal with a funded testnet wallet (`npm run cli -- wallet create --usdc 5`):
+The `NEXT_PUBLIC_*` variables are inlined into the browser bundle when it is built, so rebuild after you change them.
 
-```bash
-npm run cli -- call https://stellarpay-gateway-ten.vercel.app/v1/mcp/srv_02148cae805b \
-  dex_best_path '{"from":"XLM","to":"USDC","amount":"100"}' --max-per-call 0.05
-```
+## Deploying on Coolify
+
+The main deploy target is a self-hosted [Coolify](https://coolify.io) instance using the Docker Compose build pack: base directory `/`, compose file `docker-compose.yml`, and one domain per service.
+
+| Service | Domain (Coolify syntax) |
+| --- | --- |
+| `web` | `https://toolport.<domain>:3000` |
+| `gateway` | `https://api.toolport.<domain>:4021` |
+| `demo-server` | `https://oracle.toolport.<domain>:4022` |
+
+The full steps are in **[docs/deploy/coolify.md](docs/deploy/coolify.md)**. They cover env values, web build variables, health checks, seeding with `scripts/seed-gateway.ts`, the hairpin-NAT fallback, and why `ALLOW_PRIVATE_UPSTREAMS` must stay `false` on a shared host.
 
 ## Proven on testnet
 
-Real calls made with this repo (agent wallet → provider wallet, fee paid by the facilitator account):
+These are real calls made with this repo (agent wallet → provider wallet, fee paid by the facilitator account):
 
 | Flow | Tool | Price | Transaction |
 | --- | --- | --- | --- |
@@ -118,15 +265,15 @@ Real calls made with this repo (agent wallet → provider wallet, fee paid by th
 
 The router rows come from [`scripts/smoke-router.ts`](scripts/smoke-router.ts) (`npm run smoke:router`), which writes [`docs/verification/router-testnet.json`](docs/verification/router-testnet.json) with the run ids, results and remaining budget.
 
-End to end (sign → verify → run tool → settle) took 4.5–9 s. With the OpenZeppelin facilitator, OpenZeppelin's own accounts submitted the transaction and paid the fee through a fee bump (0.0011777 XLM); the agent wallet spent only USDC.
+End to end (sign → verify → run tool → settle) took 4.5–9 s. With the OpenZeppelin facilitator, OpenZeppelin's own accounts submitted the transaction and paid the fee through a fee bump (0.0011777 XLM). The agent wallet spent only USDC.
 
 ## How it works
 
 ```mermaid
 sequenceDiagram
     participant A as Agent (Claude Desktop)
-    participant B as stellarpay connect (stdio bridge, agent wallet)
-    participant G as StellarPay gateway
+    participant B as toolport router / connect (agent wallet)
+    participant G as Toolport gateway
     participant U as Upstream MCP server
     participant F as Facilitator
     participant S as Stellar
@@ -146,78 +293,23 @@ sequenceDiagram
     B-->>A: result + "Paid $0.02, tx …"
 ```
 
-- **Payment.** x402 v2, scheme `exact`, network `stellar:testnet` (or `stellar:pubnet`), asset = the USDC SEP-41 contract. The agent signs only the Soroban authorization entry for `transfer(agent, payTo, amount)`; the facilitator wraps it in a transaction it sources and pays for.
-- **Failed tools are free.** If the upstream returns `isError` or fails, the gateway never settles; the signed auth entry simply expires (~60 s).
+- **Payment.** x402 v2, scheme `exact`, network `stellar:testnet` (or `stellar:pubnet`), and the asset is the USDC SEP-41 contract. The agent signs only the Soroban authorization entry for `transfer(agent, payTo, amount)`. The facilitator wraps it in a transaction that the facilitator sources and pays for.
+- **Failed tools are free.** If the upstream returns `isError` or fails, the gateway never settles, and the signed auth entry simply expires (about 60 s).
 - **Prices are visible up front.** `tools/list` responses carry the price in the description and in `_meta["stellarpay/price"]`.
-- **Guardrails on the agent side.** The bridge refuses any call above `--max-per-call` or beyond `--budget`, and tells the model why.
+- **Guardrails on the agent side.** The client refuses any call above `--max-per-call` or beyond `--budget`, and tells the model why.
 
-## Components
+## Packages and apps
 
 | Path | What it is |
 | --- | --- |
 | [`packages/core`](packages/core) | Shared x402-on-Stellar code: USDC units (7 decimals), facilitator clients (hosted or in-process), resource server, Horizon account helpers |
 | [`packages/mcp`](packages/mcp) | `createPaidMcpHandler` with `server.paidTool(...)` for providers; `StellarPayClient` with spend limits for agents |
-| [`packages/router`](packages/router) | Catalog adapters, lexical search, schema validation, unpaid quotes, durable runs and discovery MCP |
-| [`packages/cli`](packages/cli) | `stellarpay` CLI: `connect` (stdio bridge for Claude Desktop/Cursor), `wallet create/show/buy-usdc`, `tools`, `call` |
-| [`apps/gateway`](apps/gateway) | Hono gateway: paid MCP proxy at `/v1/mcp/:serverId` + REST API (wallet sign-in, registration, pricing, call log, stats), SQLite/libsql via Drizzle |
-| [`apps/web`](apps/web) | Next.js dashboard: public registry, Freighter sign-in, register and price tools, live revenue and transaction links |
+| [`packages/router`](packages/router) | Catalog adapters (registry, Rail402 Bazaar, manifests), search, schema validation, unpaid quotes, durable runs and the discovery MCP |
+| [`packages/cli`](packages/cli) | `toolport` CLI (alias `stellarpay`): `router`, `connect`, `wallet create/show/buy-usdc`, `tools`, `call`, `budget` |
+| [`apps/gateway`](apps/gateway) | Hono gateway: paid MCP proxy at `/v1/mcp/:serverId` plus a REST API (wallet sign-in, registration, pricing, call log, stats), SQLite/libsql via Drizzle |
+| [`apps/web`](apps/web) | Next.js web app: landing, playground, catalog, activity, seller dashboard with Freighter sign-in, server pages with revenue and transaction links |
 | [`apps/demo-server`](apps/demo-server) | "Stellar Oracle" MCP server: `ping` (free), `account_summary` ($0.01), `dex_best_path` ($0.02, Horizon path finding) |
-
-## Quickstart (testnet, about 5 minutes)
-
-Requires Node 22+.
-
-```bash
-npm install
-```
-
-**1. Wallets.** `wallet create` makes a keypair, funds it with Friendbot, adds the USDC trustline and (with `--usdc`) buys test USDC on the testnet DEX.
-
-```bash
-STELLARPAY_WALLET=.wallets/provider.json npm run cli -- wallet create
-npm run cli -- wallet create --usdc 5        # the agent wallet, saved to ~/.stellarpay/wallet.json
-```
-
-**2. A facilitator.** The quickest is Rail402's free hosted testnet facilitator, no key needed: `FACILITATOR_URL=https://testnet.rail402.dev`. Or get an OpenZeppelin key at <https://channels.openzeppelin.com/testnet/gen> and set `FACILITATOR_API_KEY`, or run the facilitator in-process with any Friendbot-funded account by setting `FACILITATOR_SECRET_KEY=S...`. See [`apps/gateway/.env.example`](apps/gateway/.env.example).
-
-**3. Run everything** (three terminals):
-
-```bash
-npm run dev:demo                                                    # upstream on :4022
-FACILITATOR_SECRET_KEY=S... AUTH_DISABLED=true npm run dev:gateway  # gateway on :4021
-npm run dev:web                                                     # dashboard on :3000
-```
-
-**4. Register and price the demo server** in the dashboard (Connect Freighter, or "dev" + your provider address when `AUTH_DISABLED=true`), or with curl:
-
-```bash
-curl -X POST localhost:4021/api/servers -H "authorization: Bearer <provider G-address>" \
-  -H 'content-type: application/json' \
-  -d '{"upstreamUrl":"http://localhost:4022/mcp","prices":{"dex_best_path":"$0.02","account_summary":"$0.01"}}'
-```
-
-**5. Pay for a call:**
-
-```bash
-npm run cli -- tools http://localhost:4021/v1/mcp/<serverId>
-npm run cli -- call http://localhost:4021/v1/mcp/<serverId> dex_best_path '{"from":"XLM","to":"USDC","amount":"100"}' --max-per-call 0.05
-```
-
-**6. Claude Desktop.** Add to `claude_desktop_config.json`:
-
-```json
-{
-  "mcpServers": {
-    "stellarpay": {
-      "command": "node",
-      "args": ["/absolute/path/to/stellarpay-mcp/packages/cli/bin/stellarpay.js", "connect",
-               "--urls", "http://localhost:4021/v1/mcp/<serverId>", "--max-per-call", "0.05", "--budget", "1"]
-    }
-  }
-}
-```
-
-Then ask: *"What's the best path to swap 100 XLM into USDC right now?"*
+| [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) | Images for `web`, `gateway` and `demo`, and the Compose setup used by Coolify |
 
 ### Monetize your own server with the SDK (no gateway)
 
@@ -237,31 +329,13 @@ export const handler = createPaidMcpHandler((server) => {
 // Hono: app.all("/mcp", (c) => handler(c.req.raw))
 ```
 
-## Deploying to Vercel
-
-Three Vercel projects. The gateway and demo server are bundled by [`scripts/build-vercel.mjs`](scripts/build-vercel.mjs) into single Node functions (Build Output API) and uploaded prebuilt; the dashboard is a normal Next.js deploy. The gateway's database is [Turso](https://turso.tech) (hosted libSQL), since functions have no disk.
-
-```bash
-# demo server (no secrets)
-cd apps/demo-server && node ../../scripts/build-vercel.mjs . && vercel deploy --prebuilt --prod
-
-# gateway: set DATABASE_URL, DATABASE_AUTH_TOKEN (turso db show --url / turso db tokens create),
-# FACILITATOR_URL, FACILITATOR_API_KEY, SESSION_SECRET, PUBLIC_URL, WEB_ORIGIN with `vercel env add`
-cd apps/gateway && node ../../scripts/build-vercel.mjs . && vercel deploy --prebuilt --prod
-
-# register and price the demo server (signs in with the provider wallet, SEP-53)
-npx tsx scripts/seed-gateway.ts https://<gateway> https://<demo>/mcp
-
-# dashboard: set NEXT_PUBLIC_GATEWAY_URL
-cd apps/web && vercel deploy --prod
-```
-
 ## Gateway API
 
 | Method and path | Auth | Purpose |
 | --- | --- | --- |
 | `ALL /v1/mcp/:serverId` | x402 | Paid MCP proxy (Streamable HTTP, JSON or SSE upstreams) |
 | `POST /api/auth/challenge`, `POST /api/auth/verify` | – | Sign in with a SEP-53 signed message (Freighter `signMessage`) |
+| `GET /api/me` | session | The signed-in address |
 | `GET /api/servers` | – | Public registry (`?mine=true` with auth: your servers) |
 | `POST /api/servers` | owner | Register an upstream; reads its tools; optional `prices` |
 | `GET/PATCH/DELETE /api/servers/:id` | owner for writes | Server detail, listing, payTo |
@@ -271,11 +345,11 @@ cd apps/web && vercel deploy --prod
 | `GET /api/accounts/:address` | – | Balances and USDC trustline check |
 | `GET /api/health` | – | Facilitator and database reachability |
 
-Upstream URLs are only shown to the owner: anyone holding one could call the tools without paying.
+Upstream URLs are shown only to the owner, because anyone holding one could call the tools without paying.
 
-Hardening built in:
-- **No SSRF.** A hosted gateway refuses upstreams that resolve to loopback, private, link-local or metadata addresses, at registration and on every request (`ALLOW_PRIVATE_UPSTREAMS=true` to opt out; on by default when `PUBLIC_URL` is localhost).
-- **New tools start closed.** A tool the upstream adds after registration is hidden and refused until the owner refreshes and prices it, so it is never served free by accident.
+Built-in hardening:
+- **No SSRF.** A hosted gateway refuses upstreams that resolve to loopback, private, link-local or metadata addresses, both at registration and on every request. `ALLOW_PRIVATE_UPSTREAMS=true` opts out, and it is on by default when `PUBLIC_URL` is localhost.
+- **New tools start closed.** If the upstream adds a tool after registration, the tool stays hidden and refused until the owner refreshes and prices it, so it is never served free by accident.
 - **No batching around prices.** JSON-RPC batches that contain `tools/call` are refused.
 - **Budgets hold under concurrency.** The agent reserves each call's price before signing, so parallel tool calls can't overshoot `--budget`.
 
@@ -288,18 +362,40 @@ npm run typecheck
 STELLARPAY_WALLET=.wallets/provider.json npm run smoke:router
 ```
 
-The gateway test runs a real upstream MCP server behind a real gateway and covers quoting, paying, payment stripping, replay refusal, wrong-amount refusal, no charge on tool failure, free passthrough, batch refusal, late-added tools, stats and owner-only data. [`scripts/smoke-bridge.ts`](scripts/smoke-bridge.ts) drives the stdio bridge against live testnet the way Claude Desktop does.
+The gateway test runs a real upstream MCP server behind a real gateway. It covers quoting, paying, payment stripping, replay refusal, wrong-amount refusal, no charge on tool failure, free passthrough, batch refusal, late-added tools, stats and owner-only data. [`scripts/smoke-bridge.ts`](scripts/smoke-bridge.ts) drives the stdio bridge against live testnet the way Claude Desktop does.
 
 ## Stellar notes
 
 - USDC on Stellar has **7 decimals**: $0.02 = `200000` base units.
-- A `payTo` G-account needs a USDC trustline; the dashboard checks it.
+- A `payTo` G-account needs a USDC trustline. The dashboard checks it.
 - Testnet USDC: issuer `GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5`, contract `CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA`.
 - Mainnet: set `STELLAR_NETWORK=stellar:pubnet`, `STELLAR_RPC_URL`, and the facilitator `https://channels.openzeppelin.com/x402`.
 
+## Legacy: Vercel
+
+Before the move to Coolify, Toolport (then StellarPay) ran as three Vercel projects. That deployment is still up, the CLI's router still uses its gateway as the default registry, and the Coolify guide uses its demo server as the hairpin-NAT fallback:
+
+| | URL |
+| --- | --- |
+| Dashboard and registry | <https://stellarpay-web.vercel.app> |
+| Gateway API | <https://stellarpay-gateway-ten.vercel.app/api/health> |
+| Paid MCP endpoint (Stellar Oracle) | `https://stellarpay-gateway-ten.vercel.app/v1/mcp/srv_02148cae805b` |
+| Upstream demo server | <https://stellarpay-demo.vercel.app> |
+
+```bash
+toolport call https://stellarpay-gateway-ten.vercel.app/v1/mcp/srv_02148cae805b \
+  dex_best_path '{"from":"XLM","to":"USDC","amount":"100"}' --max-per-call 0.05
+```
+
+[`scripts/build-vercel.mjs`](scripts/build-vercel.mjs) bundles the gateway and demo server into single Node functions (Build Output API), which are deployed with `vercel deploy --prebuilt --prod` from each app directory. The gateway there uses [Turso](https://turso.tech) (hosted libSQL) through `DATABASE_URL` and `DATABASE_AUTH_TOKEN`, since functions have no disk.
+
+## Research
+
+[Research index](docs/research/README.md): Frames/MCPay mechanics, HackMeridian partners and materials, reusable components, MPP Router observations and source snapshots. Each report records its research date; this README describes the current implementation. Implementation and research were assisted by OpenAI Codex; external sources and dependencies are attributed in the reports and package manifests.
+
 ## Not done yet
 
-- Publish `stellarpay` and `@stellarpay/*` to npm (until then use the local `node …/stellarpay.js` path; the dashboard reads `NEXT_PUBLIC_CLI_PATH`, and `NEXT_PUBLIC_CLI_NPM=true` switches it to `npx`).
-- Gateway payment claims are atomic in the shared database and bind real proofs to the payer authorization nonce. Sign-in challenges are stateless (HMAC), so they work across instances. There is no automated payment/run reconciliation worker yet.
-- Freighter sign-in: the server side is verified with real SEP-53 signatures (`scripts/seed-gateway.ts`); the browser extension flow is not yet tested end to end.
-- Stretch: sponsored reserves so agent wallets need 0 XLM; smart-account spending policies enforced on-chain; buyer dashboard and automated reconciliation for unresolved payments.
+- Publish the CLI and `@stellarpay/*` to npm. Until then, use `npm link -w packages/cli` or the local `node …/packages/cli/bin/stellarpay.js` path. The web app reads `NEXT_PUBLIC_CLI_PATH`, and `NEXT_PUBLIC_CLI_NPM=true` switches it to `npx`.
+- Gateway payment claims are atomic in the shared database and bind real proofs to the payer authorization nonce. Sign-in challenges are stateless (HMAC), so they work across instances. There is no automated payment or run reconciliation worker yet.
+- Freighter sign-in: the server side is verified with real SEP-53 signatures (`scripts/seed-gateway.ts`), but the browser extension flow hasn't been tested end to end yet.
+- Stretch: sponsored reserves so agent wallets need 0 XLM, smart-account spending policies enforced on-chain, and automated reconciliation for unresolved payments.
