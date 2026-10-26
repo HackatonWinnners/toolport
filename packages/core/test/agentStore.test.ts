@@ -31,6 +31,31 @@ describe("durable wallet budgets and runs",()=>{
     expect(await raised.budget()).toMatchObject({cap:"1",pending:"0.02",remaining:"0.98"});
     const other=await open({url,network:"stellar:pubnet"});expect((await other.budget()).pending).toBe("0");
   });
+  it("keeps a store's own budget when another store on the same db raises the stored cap",async()=>{
+    const dir=await mkdtemp(join(tmpdir(),"stellarpay-"));cleanup.push(()=>rm(dir,{recursive:true,force:true}));
+    const url=pathToFileURL(join(dir,"agent.db")).href;
+    const plugin=await open({url,budget:"0.1",maxPerCall:"0.05"});
+    await open({url,budget:"1",maxPerCall:"0.05"});
+    expect(await plugin.reserve("one",500000n)).toBeNull();
+    expect(await plugin.reserve("two",500000n)).toBeNull();
+    expect(await plugin.reserve("three",500000n)).toMatch(/budget/);
+    expect(await plugin.budget()).toMatchObject({cap:"0.1",pending:"0.1",remaining:"0"});
+  });
+  it("leaves stored limits in place and adopts them when opened with keepStoredLimits",async()=>{
+    const dir=await mkdtemp(join(tmpdir(),"stellarpay-"));cleanup.push(()=>rm(dir,{recursive:true,force:true}));
+    const url=pathToFileURL(join(dir,"agent.db")).href;
+    const plugin=await open({url,budget:"0.1",maxPerCall:"0.02"});
+    const inspector=await open({url,budget:"1",maxPerCall:"0.05",keepStoredLimits:true});
+    expect(await inspector.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
+    expect(await inspector.reserve("big",300000n)).toMatch(/per-call cap/);
+    const reopened=await open({url,budget:"0.1",maxPerCall:"0.02",keepStoredLimits:true});
+    expect(await reopened.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
+    expect(await plugin.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
+  });
+  it("uses the given limits for a new session opened with keepStoredLimits",async()=>{
+    const store=await open({budget:"0.3",maxPerCall:"0.01",keepStoredLimits:true});
+    expect(await store.budget()).toMatchObject({cap:"0.3",perCall:"0.01"});
+  });
   it("accounts settlement once and releases only provably unsent reservations",async()=>{
     const store=await open();await store.reserve("a",200000n);await store.resolve("a","settled","tx");
     await store.resolve("a","settled","tx");await store.resolve("a","unknown");

@@ -22,14 +22,14 @@ export const fingerprint = (value: unknown) => createHash("sha256").update(encod
 export class AgentStore {
   private constructor(private readonly db: Client, readonly scope: string, readonly perCall: bigint, readonly cap: bigint, readonly network: StellarNetwork, readonly payer: string) {}
 
-  static async open(options: { url: string; authToken?: string; network: StellarNetwork; payer: string; session?: string; maxPerCall: PriceInput; budget: PriceInput }) {
+  static async open(options: { url: string; authToken?: string; network: StellarNetwork; payer: string; session?: string; maxPerCall: PriceInput; budget: PriceInput; keepStoredLimits?: boolean }) {
     const local = options.url === ":memory:" || options.url.startsWith("file:");
     const { createClient } = local ? await import("@libsql/client") : await import("@libsql/client/web");
     const db = createClient({ url: options.url, authToken: options.authToken, ...(local ? {} : { fetch: async (request: Request) => {
       const headers:Record<string,string> = {}; request.headers.forEach((v,k)=>{headers[k]=v;});
       return fetch(request.url,{method:request.method,headers,body:request.method==="GET"||request.method==="HEAD"?undefined:await request.arrayBuffer()});
     } }) });
-    const cap = toUnits(options.budget), perCall = toUnits(options.maxPerCall);
+    let cap = toUnits(options.budget), perCall = toUnits(options.maxPerCall);
     if (cap <= 0n || perCall <= 0n || cap > BigInt(Number.MAX_SAFE_INTEGER) || perCall > BigInt(Number.MAX_SAFE_INTEGER)) { db.close(); throw new Error("Budget and per-call cap must be positive and at most 900719925.4740991 USDC"); }
     const scope = fingerprint({ network: options.network, payer: options.payer, session: options.session ?? "default" });
     try {
@@ -42,7 +42,10 @@ export class AgentStore {
       await db.execute({ sql: "INSERT INTO agent_budgets VALUES (?,?,?) ON CONFLICT DO NOTHING", args: [scope, cap.toString(), perCall.toString()] });
       const row = (await db.execute({ sql: "SELECT * FROM agent_budgets WHERE scope=?", args: [scope] })).rows[0];
       // New limits apply from now on; spent and pending amounts in this session are kept, never reset.
-      if (row.cap !== cap.toString() || row.per_call !== perCall.toString()) {
+      if (options.keepStoredLimits) {
+        cap = BigInt(String(row.cap));
+        perCall = BigInt(String(row.per_call));
+      } else if (row.cap !== cap.toString() || row.per_call !== perCall.toString()) {
         await db.execute({ sql: "UPDATE agent_budgets SET cap=?, per_call=? WHERE scope=?", args: [cap.toString(), perCall.toString(), scope] });
       }
       if (options.url.startsWith("file:")) await chmod(options.url.startsWith("file://") ? fileURLToPath(options.url) : decodeURIComponent(options.url.slice(5)), 0o600);
@@ -58,10 +61,10 @@ export class AgentStore {
     const inserted = await this.db.execute({
       sql: `INSERT INTO agent_reservations(scope,id,amount,state)
         SELECT ?,?,?,'reserved' WHERE CAST(? AS INTEGER) <=
-        CAST((SELECT cap FROM agent_budgets WHERE scope=?) AS INTEGER) -
+        MIN(CAST((SELECT cap FROM agent_budgets WHERE scope=?) AS INTEGER), CAST(? AS INTEGER)) -
         COALESCE((SELECT SUM(CAST(amount AS INTEGER)) FROM agent_reservations WHERE scope=? AND state!='released'),0)
         ON CONFLICT(scope,id) DO NOTHING`,
-      args: [this.scope,id,amount.toString(),amount.toString(),this.scope,this.scope],
+      args: [this.scope,id,amount.toString(),amount.toString(),this.scope,this.cap.toString(),this.scope],
     });
     if (inserted.rowsAffected === 1) return null;
     const existing = await this.db.execute({sql:"SELECT id FROM agent_reservations WHERE scope=? AND id=?",args:[this.scope,id]});
@@ -82,7 +85,14 @@ export class AgentStore {
     const rows = (await this.db.execute({ sql: "SELECT amount,state FROM agent_reservations WHERE scope=?", args: [this.scope] })).rows;
     const sum = (states: string[]) => rows.filter((r) => states.includes(String(r.state))).reduce((n, r) => n + BigInt(String(r.amount)), 0n);
     const spent = sum(["settled"]), pending = sum(["reserved", "unknown"]);
-    return { scope: this.scope, asset: "USDC", cap: fromUnits(this.cap), perCall: fromUnits(this.perCall), spent: fromUnits(spent), pending: fromUnits(pending), remaining: fromUnits(this.cap - spent - pending) };
+    const cap = await this.effectiveCap();
+    return { scope: this.scope, asset: "USDC", cap: fromUnits(cap), perCall: fromUnits(this.perCall), spent: fromUnits(spent), pending: fromUnits(pending), remaining: fromUnits(cap - spent - pending) };
+  }
+
+  private async effectiveCap() {
+    const row = (await this.db.execute({ sql: "SELECT cap FROM agent_budgets WHERE scope=?", args: [this.scope] })).rows[0];
+    const stored = row ? BigInt(String(row.cap)) : this.cap;
+    return stored < this.cap ? stored : this.cap;
   }
 
   /** Holds whose outcome is not known yet (reserved = in flight, unknown = authorized but unconfirmed). */

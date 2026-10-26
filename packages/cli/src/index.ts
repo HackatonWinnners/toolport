@@ -92,11 +92,11 @@ function limits() {
 }
 
 let store: AgentStore | undefined;
-async function agentStore(secret: string) {
+async function agentStore(secret: string, keepStoredLimits = false) {
   if (!store) {
     const path = values["state-db"] ?? join(dirname(walletPath()), "agent.db");
     await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-    store = await AgentStore.open({ url: pathToFileURL(path).href, network: network(), payer: Keypair.fromSecret(secret).publicKey(), session: values.session ?? "default", ...limits() });
+    store = await AgentStore.open({ url: pathToFileURL(path).href, network: network(), payer: Keypair.fromSecret(secret).publicKey(), session: values.session ?? "default", ...limits(), keepStoredLimits });
   }
   return store;
 }
@@ -207,7 +207,7 @@ async function callCommand(url: string | undefined, tool: string | undefined, ra
 
 async function budgetCommand() {
   const secret = await resolveSecret(values.secret);
-  const s = await agentStore(secret);
+  const s = await agentStore(secret, values.budget === undefined && values["max-per-call"] === undefined);
   const net = network();
   if (values.reconcile) {
     const rpcUrl = values["rpc-url"] ?? process.env.STELLAR_RPC_URL ?? networkInfo(net).rpcUrl;
