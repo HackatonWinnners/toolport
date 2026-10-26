@@ -32,14 +32,14 @@ test.describe("S1 landing", () => {
     test(`S1 header links go to the app pages at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.goto("/");
-      const nav = page.getByTestId("landing-nav");
+      const nav = page.getByTestId("site-nav");
       await expect(nav).toBeVisible();
       const hrefs = await nav.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
       expect(hrefs.filter((h) => h?.startsWith("#") || h?.startsWith("/#"))).toEqual([]);
       await nav.getByRole("link", { name: "Catalog", exact: true }).click();
       await expect(page).toHaveURL(/\/catalog$/);
       await page.goto("/");
-      await page.getByTestId("landing-nav").getByRole("link", { name: "Sell", exact: true }).click();
+      await page.getByTestId("site-nav").getByRole("link", { name: "Sell", exact: true }).click();
       await expect(page).toHaveURL(/\/dashboard$/);
     });
   }

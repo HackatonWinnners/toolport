@@ -1,16 +1,17 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/brand/Logo";
+import { SiteHeader } from "@/components/site/SiteHeader";
 import { DOCS_URL, REPO_URL } from "@/lib/api";
 import "./landing.css";
 
-// Marketing shell from design/toolport/Landing.dc.html: sticky header and footer.
+// Marketing shell from design/toolport/Landing.dc.html: the shared header and the footer.
 const navLink = "text-fg-soft no-underline transition-colors hover:text-fg";
 
-function Brand({ size, animated }: { size: number; animated?: boolean }) {
+function Brand({ size }: { size: number }) {
   return (
     <>
-      <LogoMark size={size} ringClass={animated ? { a: "tpl-A", b: "tpl-B", link: "tpl-L" } : undefined} />
+      <LogoMark size={size} />
       <span className="font-semibold leading-none tracking-[-0.055em]">toolport</span>
     </>
   );
@@ -19,39 +20,7 @@ function Brand({ size, animated }: { size: number; animated?: boolean }) {
 export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="tpx min-h-screen bg-ink font-sans text-fg">
-      <header className="sticky top-0 z-10 border-b border-raised bg-[rgba(27,26,23,0.86)] backdrop-blur-md">
-        <div className="mx-auto box-border flex max-w-[1200px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3.5 sm:flex-nowrap sm:px-6">
-          <Link href="/" aria-label="Toolport home" className="flex items-center gap-[9px] text-[22px] text-fg no-underline">
-            <Brand size={36} animated />
-          </Link>
-          <nav
-            aria-label="Primary"
-            data-testid="landing-nav"
-            className="order-last flex w-full gap-[26px] text-sm sm:order-none sm:w-auto"
-          >
-            <Link href="/catalog" className={navLink}>Catalog</Link>
-            <Link href="/dashboard" className={navLink}>Sell</Link>
-            {DOCS_URL && (
-              <a href={DOCS_URL} target="_blank" rel="noreferrer" className={navLink}>Docs</a>
-            )}
-          </nav>
-          <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-1.5 text-[12.5px] text-muted lg:inline-flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-held" />
-              Testnet registry
-              <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-good" />
-              Mainnet APIs
-            </span>
-            <Link
-              href="/#connect"
-              data-testid="nav-open-app"
-              className="inline-flex h-10 items-center rounded-xl bg-fg px-4 text-sm font-medium text-ink no-underline transition-colors hover:bg-white"
-            >
-              Connect your agent
-            </Link>
-          </div>
-        </div>
-      </header>
+      <SiteHeader />
 
       {children}
 

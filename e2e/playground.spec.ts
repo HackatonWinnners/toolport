@@ -134,7 +134,7 @@ test.describe.skip("playground (unrouted while it is on the roadmap)", () => {
     await page.route(`${GATEWAY_URL}/**`, (route) => route.abort("connectionrefused"));
     await page.goto("/playground");
     await expect(page.getByTestId("error-note").first()).toBeVisible();
-    await expect(page.getByTestId("app-nav")).toBeVisible();
+    await expect(page.getByTestId("site-nav")).toBeVisible();
     expect(watch.crashes, "uncaught page errors").toEqual([]);
   });
 });

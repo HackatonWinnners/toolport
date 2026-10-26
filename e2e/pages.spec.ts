@@ -22,9 +22,9 @@ test.describe("S6 pages", () => {
     await expect(page).toHaveURL(/\/catalog$/);
   });
 
-  test("S6 every app-nav link resolves", async ({ page, request, watch }) => {
+  test("S6 every site-nav link resolves", async ({ page, request, watch }) => {
     await page.goto("/catalog");
-    const nav = page.getByTestId("app-nav");
+    const nav = page.getByTestId("site-nav");
     await expect(nav).toBeVisible();
     const hrefs = await nav.locator("a[href]").evaluateAll((as) => as.map((a) => (a as HTMLAnchorElement).href));
     expect(hrefs.length).toBeGreaterThanOrEqual(2);
@@ -37,9 +37,32 @@ test.describe("S6 pages", () => {
     const origin = new URL(page.url()).origin;
     for (const href of hrefs.filter((h) => h.startsWith(origin))) {
       await page.goto(href);
-      await expect(page.getByTestId("app-nav")).toBeVisible();
+      await expect(page.getByTestId("site-nav")).toBeVisible();
     }
     expect(watch.errors).toEqual([]);
+  });
+
+  test("S6 the same header on the landing and the app pages", async ({ page }) => {
+    const snapshot = async (path: string) => {
+      await page.goto(path);
+      const nav = page.getByTestId("site-nav");
+      await expect(nav).toBeVisible();
+      return {
+        links: await nav.locator("a").evaluateAll((as) => as.map((a) => `${a.textContent}→${a.getAttribute("href")}`)),
+        active: await nav.locator('a[aria-current="page"]').allTextContents(),
+        cta: await page.getByTestId("nav-open-app").getAttribute("href"),
+      };
+    };
+    const landing = await snapshot("/");
+    const catalog = await snapshot("/catalog");
+    const sell = await snapshot("/dashboard");
+    expect(catalog.links).toEqual(landing.links);
+    expect(sell.links).toEqual(landing.links);
+    expect([landing.cta, catalog.cta, sell.cta]).toEqual(["/#connect", "/#connect", "/#connect"]);
+    expect(landing.active).toEqual([]);
+    expect(catalog.active).toEqual(["Catalog"]);
+    expect(sell.active).toEqual(["Sell"]);
+    await expect(page.getByText("Testnet registry")).toHaveCount(0);
   });
 
   test("S6 catalog shows registry servers and MPP Router APIs in one grid", async ({ page, watch }) => {
