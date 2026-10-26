@@ -41,20 +41,29 @@ describe("durable wallet budgets and runs",()=>{
     expect(await plugin.reserve("three",500000n)).toMatch(/budget/);
     expect(await plugin.budget()).toMatchObject({cap:"0.1",pending:"0.1",remaining:"0"});
   });
-  it("leaves stored limits in place and adopts them when opened with keepStoredLimits",async()=>{
+  it("leaves stored limits in place and adopts them when opened to keep its stored limits",async()=>{
     const dir=await mkdtemp(join(tmpdir(),"stellarpay-"));cleanup.push(()=>rm(dir,{recursive:true,force:true}));
     const url=pathToFileURL(join(dir,"agent.db")).href;
     const plugin=await open({url,budget:"0.1",maxPerCall:"0.02"});
-    const inspector=await open({url,budget:"1",maxPerCall:"0.05",keepStoredLimits:true});
+    const inspector=await open({url,budget:"1",maxPerCall:"0.05",keepStoredBudget:true,keepStoredPerCall:true});
     expect(await inspector.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
     expect(await inspector.reserve("big",300000n)).toMatch(/per-call cap/);
-    const reopened=await open({url,budget:"0.1",maxPerCall:"0.02",keepStoredLimits:true});
+    const reopened=await open({url,budget:"0.1",maxPerCall:"0.02",keepStoredBudget:true,keepStoredPerCall:true});
     expect(await reopened.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
     expect(await plugin.budget()).toMatchObject({cap:"0.1",perCall:"0.02"});
   });
-  it("uses the given limits for a new session opened with keepStoredLimits",async()=>{
-    const store=await open({budget:"0.3",maxPerCall:"0.01",keepStoredLimits:true});
+  it("uses the given limits for a new session opened to keep its stored limits",async()=>{
+    const store=await open({budget:"0.3",maxPerCall:"0.01",keepStoredBudget:true,keepStoredPerCall:true});
     expect(await store.budget()).toMatchObject({cap:"0.3",perCall:"0.01"});
+  });
+  it("refuses a payment above a per-call cap that another store on the same db lowered",async()=>{
+    const dir=await mkdtemp(join(tmpdir(),"stellarpay-"));cleanup.push(()=>rm(dir,{recursive:true,force:true}));
+    const url=pathToFileURL(join(dir,"agent.db")).href;
+    const router=await open({url,budget:"1",maxPerCall:"0.05"});
+    await open({url,budget:"1",maxPerCall:"0.01"});
+    expect(await router.reserve("over",200000n)).toMatch(/exceeds the per-call cap/);
+    expect(await router.reserve("under",100000n)).toBeNull();
+    expect(await router.budget()).toMatchObject({perCall:"0.01",pending:"0.01"});
   });
   it("accounts settlement once and releases only provably unsent reservations",async()=>{
     const store=await open();await store.reserve("a",200000n);await store.resolve("a","settled","tx");

@@ -29,7 +29,7 @@ A payment re-challenged with an `invalidReason` such as insufficient balance or 
 
 ## Budget and holds
 
-`STELLAR_NETWORK=stellar:testnet toolport budget --session <name>` prints cap, per-call cap, spent, pending, remaining and each open **hold**. The Claude Code plugin uses session `claude-code`; the CLI default is `default`. `get_budget` shows the same numbers for the router's session. `toolport budget` leaves the stored limits as they are; `--budget` and `--max-per-call` rewrite the stored limits of that session (a lower value also binds a router already running on it), so pass them only when the user asks for new limits.
+`STELLAR_NETWORK=stellar:testnet toolport budget --session <name>` prints cap, per-call cap, spent, pending, remaining and each open **hold**. The Claude Code plugin uses session `claude-code`; the CLI default is `default`. `get_budget` shows the same numbers for the router's session. `toolport budget` leaves the stored limits as they are. `--budget` rewrites only the stored budget and `--max-per-call` only the stored per-call cap of that session. A lower stored value also binds a router already running on that session; a higher one never raises that router's own limits. Pass either flag only when the user asks for new limits.
 
 A **hold** is an amount reserved for a payment whose outcome is not known yet. It counts as pending and stays until resolved; there is no expiry.
 
