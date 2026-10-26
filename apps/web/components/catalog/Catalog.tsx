@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { Code } from "@/components/ui";
+import { CopyPromptButton } from "@/components/agent/CopyPromptButton";
 import { ApiCardSkeleton, ApiGridSkeleton } from "@/components/brand/Skeleton";
 import { MAINNET_MAX_PER_CALL, MAINNET_WALLET, api, mppRouterCommand, registryRouterCommand, usd, type Server } from "@/lib/api";
 
@@ -190,6 +191,10 @@ export function Catalog({ query }: { query: string }) {
       <details className="text-sm">
         <summary className="cursor-pointer text-muted hover:text-fg">Give them to your agent</summary>
         <div className="mt-2 space-y-2">
+          <div className="flex flex-wrap items-center gap-3">
+            <CopyPromptButton className="h-9 rounded-[10px] bg-fg px-3.5 text-[13px] text-ink hover:bg-white" />
+            <span className="text-xs text-muted">One prompt: your coding agent installs Toolport and sets up a testnet wallet.</span>
+          </div>
           <p className="text-xs text-muted">
             The router searches, prices and pays under your caps. Each network is its own router run with its own wallet.
           </p>

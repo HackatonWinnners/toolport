@@ -2,8 +2,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/brand/Logo";
 import { StatusDot } from "@/components/brand/StatusDot";
+import { CopyPromptButton } from "@/components/agent/CopyPromptButton";
 import { ProviderIcon } from "@/components/catalog/Catalog";
 import { CopyButton } from "@/components/ui";
+import { claudePluginCommands } from "@/lib/agentPrompt";
 import { DOCS_URL, FAUCET_URL, routerConfig, txUrl } from "@/lib/api";
 import { HowItWorks } from "./HowItWorks";
 import { PROOF, shortHash } from "./proof";
@@ -311,18 +313,37 @@ export function Closing() {
         <h2 id="cta-h" className="m-0 text-[clamp(36px,5vw,64px)] font-semibold leading-none tracking-[-0.05em]">
           Plug your agent in.
         </h2>
-        <p className="m-0 text-[17px] text-fg-soft">
-          Give your agent one config block and it can find, price and pay for tools on its own.
+        <p className="m-0 max-w-[560px] text-[17px] leading-[1.6] text-fg-soft">
+          Paste one prompt into your coding agent and it installs Toolport, creates a testnet wallet and checks the
+          connection. Or set it up by hand below.
         </p>
+        <CopyPromptButton className={`${cta} h-[52px] rounded-[14px] px-[22px] text-base`} />
       </div>
       <div className="flex w-full flex-wrap gap-4">
+        <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5 rounded-[22px] border border-line bg-panel p-5 sm:p-7">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-xl font-semibold tracking-[-0.03em]">Claude Code plugin</span>
+            <CopyButton value={claudePluginCommands()} />
+          </div>
+          <p className="m-0 text-[15px] leading-[1.6] text-fg-soft">
+            Then run <code className="font-mono text-fg">/toolport:setup</code> in Claude Code: it checks the CLI and
+            creates a funded testnet wallet.
+          </p>
+          <pre
+            data-testid="connect-plugin"
+            className="m-0 overflow-x-auto whitespace-pre rounded-[14px] border border-selected bg-[#141311] px-[18px] py-4 font-mono text-[13.5px] leading-[1.65] text-fg"
+          >
+            {claudePluginCommands()}
+          </pre>
+        </div>
         <div className="flex min-w-0 flex-[1.4_1_420px] flex-col gap-3.5 rounded-[22px] border border-line bg-panel p-5 sm:p-7">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-xl font-semibold tracking-[-0.03em]">Connect your agent</span>
+            <span className="text-xl font-semibold tracking-[-0.03em]">Any MCP client</span>
             <CopyButton value={config} />
           </div>
           <p className="m-0 text-[15px] leading-[1.6] text-fg-soft">
-            Add this to Claude Desktop or Cursor. $1 budget, $0.05 per call.
+            Add this to Claude Desktop, Cursor or any MCP client. Toolport registry on testnet, $1 budget, $0.05 per
+            call.
           </p>
           <pre
             data-testid="connect-config"

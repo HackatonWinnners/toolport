@@ -94,6 +94,24 @@ test.describe("S1 landing", () => {
     await expect(page.locator("#connect")).toBeInViewport();
   });
 
+  for (const path of ["/", "/catalog"]) {
+    test(`S1 Copy setup prompt puts the install prompt in the clipboard on ${path}`, async ({ page }) => {
+      await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+      await page.goto(path);
+      if (path === "/catalog") await page.locator("summary", { hasText: "Give them to your agent" }).click();
+      const button = page.getByTestId("copy-agent-prompt").first();
+      await expect(button).toHaveText("Copy setup prompt");
+      await button.click();
+      await expect(button).toHaveText("Copied!");
+      const text = await page.evaluate(() => navigator.clipboard.readText());
+      expect(text).toContain("toolport");
+      expect(text).toContain("/toolport:setup");
+      expect(text).toContain("claude plugin install toolport@toolport");
+      expect(text).toContain("search_tools");
+      await expect(button).toHaveText("Copy setup prompt", { timeout: 4_000 });
+    });
+  }
+
   test("S1 landing has no playground links", async ({ page }) => {
     await page.goto("/");
     await expect(page.locator('a[href*="/playground"], a[href*="/activity"]')).toHaveCount(0);

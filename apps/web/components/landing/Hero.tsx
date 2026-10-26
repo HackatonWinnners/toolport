@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CopyPromptButton } from "@/components/agent/CopyPromptButton";
 import { txUrl } from "@/lib/api";
 import { shortHash } from "./proof";
 import { Ext, Section, cta, ghost } from "./parts";
@@ -15,14 +16,16 @@ export function Hero() {
           <span className="text-faint">Never more than you allow.</span>
         </h1>
         <p className="m-0 max-w-[520px] text-lg leading-[1.6] text-fg-soft">
-          One MCP connection to find paid tools, hear the exact price before anything is signed, and pay per call in
-          USDC on Stellar. Every purchase comes back with an on-chain receipt.
+          One MCP connection per network to find paid tools, hear the exact price before anything is signed, and pay
+          per call in USDC on Stellar: testnet for the Toolport registry, mainnet for MPP Router APIs. Every purchase
+          comes back with an on-chain receipt.
         </p>
         <div className="flex flex-wrap gap-3">
           <a href="#connect" className={`${cta} h-[52px] gap-2.5 rounded-[14px] px-[22px] text-base`}>
             Connect your agent
             <span className="font-mono text-[12.5px] opacity-60">toolport router</span>
           </a>
+          <CopyPromptButton className={`${ghost} h-[52px] rounded-[14px] px-[22px] text-base`} />
           <Link href="/catalog" className={`${ghost} h-[52px] rounded-[14px] px-[22px] text-base`}>
             Browse the catalog
           </Link>

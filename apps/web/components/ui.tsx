@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { copyText } from "@/lib/clipboard";
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`rounded-2xl border border-line bg-panel p-5 ${className}`}>{children}</div>;
@@ -42,7 +43,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
     <button
       type="button"
       onClick={async () => {
-        await navigator.clipboard.writeText(value);
+        if (!(await copyText(value))) return;
         setCopied(true);
         setTimeout(() => setCopied(false), 1500);
       }}
