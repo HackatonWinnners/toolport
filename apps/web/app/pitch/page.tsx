@@ -224,25 +224,23 @@ function Workflow() {
 }
 
 function Team() {
-  const team: { name: string; role: string; built: string; link?: string; handle: string }[] = [
+  const team: { name: string; role: string; built: string; link?: string }[] = [
     {
-      name: "holeesheet",
+      name: "Nam Lap Vu",
       role: "Backend engineer · Go",
       built: "Payments core and the x402 MCP SDK, the gateway, the CLI and the router's paid calls.",
-      handle: "GitHub: holeesheet",
+      link: "https://www.linkedin.com/in/nam-lap-vu-b37a53266/",
     },
     {
-      name: "madvil2",
+      name: "Konstantin Kokaimov",
       role: "Engineer",
       built: "Discovery router, durable payments and budget holds, ecosystem research and the MPP Router catalog.",
       link: "https://www.linkedin.com/in/kokaimov",
-      handle: "LinkedIn: kokaimov",
     },
     {
-      name: "Nastya",
+      name: "Anastasiia Hlushchenko",
       role: "UI/UX designer",
       built: "The Toolport brand, logo and motion, the site, the catalog and this deck.",
-      handle: "Design",
     },
   ];
   return (
@@ -266,12 +264,10 @@ function Team() {
                   <span className="font-mono text-xs text-good">{m.role}</span>
                 </span>
                 <span className="mt-1 block text-sm leading-snug text-fg-soft">{m.built}</span>
-                {m.link ? (
+                {m.link && (
                   <a href={m.link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-accent hover:text-fg">
-                    {m.handle} ↗
+                    LinkedIn ↗
                   </a>
-                ) : (
-                  <span className="mt-2 block text-xs text-muted">{m.handle}</span>
                 )}
               </span>
             </li>
