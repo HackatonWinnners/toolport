@@ -6,7 +6,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { AgentStore, NETWORKS } from "@stellarpay/core";
 import { PaymentUnknownError } from "@stellarpay/mcp/client";
-import { ToolCatalog, ToolRouter, createRouterMcp, isPrivate, providerFetch, type ToolBuyer } from "../src/index.js";
+import { ToolCatalog, ToolRouter, createRouterMcp, fixedWallet, isPrivate, providerFetch, type ToolBuyer } from "../src/index.js";
 const cleanup:(()=>Promise<unknown>|void)[]=[];
 afterEach(async()=>{for(const fn of cleanup.splice(0).reverse())await fn();});
 const entry={id:"search",title:"Search web",description:"Useful search",network:"stellar:testnet",transport:"http",method:"POST",url:"https://provider.example/search",inputSchema:{type:"object",properties:{body:{type:"object",properties:{query:{type:"string"}},required:["query"],additionalProperties:false}},required:["body"],additionalProperties:false}};
@@ -24,7 +24,7 @@ async function setup(mode:"ok"|"unknown"|"error"="ok") {
   const required={x402Version:2,resource:{url:"https://provider.example/search"},accepts:[{scheme:"exact",network:"stellar:testnet" as const,asset:NETWORKS["stellar:testnet"].usdcContract,amount:"200000",payTo:"GSELLER",maxTimeoutSeconds:60,extra:{}}]};
   const buyer:ToolBuyer={connect:vi.fn(async()=>{}),close:vi.fn(async()=>{}),callHttp:call,callTool:vi.fn(),quoteTool:vi.fn(),decodeHttpQuote:()=>required};
   const fetcher=vi.fn(async()=>new Response(null,{status:402})) as unknown as typeof fetch;
-  return {store,catalog,call,buyer,manifestPath,router:new ToolRouter(catalog,store,()=>buyer,"stellar:testnet",fetcher)};
+  return {store,catalog,call,buyer,manifestPath,router:new ToolRouter(catalog,fixedWallet({store,createBuyer:()=>buyer},{maxPerCall:"0.05",budget:"1"}),()=>buyer,"stellar:testnet",fetcher)};
 }
 const request={id:"manifest:search",args:{body:{query:"stellar"}},maxAmount:"0.05",idempotencyKey:"one"};
 describe("discovery router",()=>{

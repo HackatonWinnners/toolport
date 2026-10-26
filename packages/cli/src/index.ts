@@ -22,7 +22,7 @@ import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { runRouter } from "./router.js";
-import { loadWallet, resolveSecret, saveWallet, walletPath } from "./wallet.js";
+import { findSecret, loadWallet, resolveSecret, saveWallet, walletPath } from "./wallet.js";
 
 const HELP = `toolport: pay for MCP tools with USDC on Stellar
 
@@ -92,13 +92,15 @@ function limits() {
   };
 }
 
+async function openStore(payer: string, keep: { keepStoredBudget?: boolean; keepStoredPerCall?: boolean } = {}) {
+  const path = values["state-db"] ?? join(dirname(walletPath()), "agent.db");
+  await mkdir(dirname(path), { recursive: true, mode: 0o700 });
+  return AgentStore.open({ url: pathToFileURL(path).href, network: network(), payer, session: values.session ?? "default", ...limits(), ...keep });
+}
+
 let store: AgentStore | undefined;
 async function agentStore(secret: string, keep: { keepStoredBudget?: boolean; keepStoredPerCall?: boolean } = {}) {
-  if (!store) {
-    const path = values["state-db"] ?? join(dirname(walletPath()), "agent.db");
-    await mkdir(dirname(path), { recursive: true, mode: 0o700 });
-    store = await AgentStore.open({ url: pathToFileURL(path).href, network: network(), payer: Keypair.fromSecret(secret).publicKey(), session: values.session ?? "default", ...limits(), ...keep });
-  }
+  store ??= await openStore(Keypair.fromSecret(secret).publicKey(), keep);
   return store;
 }
 
@@ -244,15 +246,17 @@ async function main() {
       return callCommand(a, b, c);
     case "budget":
       return budgetCommand();
-    case "router": {
-      const secretKey = await resolveSecret(values.secret);
-      return runRouter({ secretKey, network: network(), rpcUrl: values["rpc-url"] ?? process.env.STELLAR_RPC_URL,
-        store: await agentStore(secretKey),
-        ...limits(), gatewayUrl: routerGatewayUrl(values.gateway, process.env.TOOLPORT_GATEWAY_URL, network()),
+    case "router":
+      return runRouter({
+        network: network(),
+        rpcUrl: values["rpc-url"] ?? process.env.STELLAR_RPC_URL,
+        resolveSecret: () => findSecret(values.secret),
+        openStore: (payer) => openStore(payer),
+        ...limits(),
+        gatewayUrl: routerGatewayUrl(values.gateway, process.env.TOOLPORT_GATEWAY_URL, network()),
         manifestPath: values.manifest,
         allowLoopback: values["allow-local"],
       });
-    }
     case "connect": {
       const urls = (values.urls ?? process.env.STELLARPAY_URLS ?? a ?? "").split(",").map((u) => u.trim()).filter(Boolean);
       if (!urls.length) throw new Error("Usage: toolport connect --urls <url1,url2>");

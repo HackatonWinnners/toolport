@@ -18,6 +18,12 @@ export function canonical(value: unknown): unknown {
 }
 export const fingerprint = (value: unknown) => createHash("sha256").update(encode(canonical(value))).digest("hex");
 
+export function spendLimitUnits(limits: { maxPerCall: PriceInput; budget: PriceInput }) {
+  const cap = toUnits(limits.budget), perCall = toUnits(limits.maxPerCall);
+  if (cap <= 0n || perCall <= 0n || cap > BigInt(Number.MAX_SAFE_INTEGER) || perCall > BigInt(Number.MAX_SAFE_INTEGER)) throw new Error("Budget and per-call cap must be positive and at most 900719925.4740991 USDC");
+  return { cap, perCall };
+}
+
 /** Persistent, wallet/network/session-scoped spend reservations and request results. No wallet secrets. */
 export class AgentStore {
   private constructor(private readonly db: Client, readonly scope: string, readonly perCall: bigint, readonly cap: bigint, readonly network: StellarNetwork, readonly payer: string) {}
@@ -29,8 +35,8 @@ export class AgentStore {
       const headers:Record<string,string> = {}; request.headers.forEach((v,k)=>{headers[k]=v;});
       return fetch(request.url,{method:request.method,headers,body:request.method==="GET"||request.method==="HEAD"?undefined:await request.arrayBuffer()});
     } }) });
-    let cap = toUnits(options.budget), perCall = toUnits(options.maxPerCall);
-    if (cap <= 0n || perCall <= 0n || cap > BigInt(Number.MAX_SAFE_INTEGER) || perCall > BigInt(Number.MAX_SAFE_INTEGER)) { db.close(); throw new Error("Budget and per-call cap must be positive and at most 900719925.4740991 USDC"); }
+    let cap: bigint, perCall: bigint;
+    try { ({ cap, perCall } = spendLimitUnits(options)); } catch (error) { db.close(); throw error; }
     const scope = fingerprint({ network: options.network, payer: options.payer, session: options.session ?? "default" });
     try {
       if (local) await db.execute("PRAGMA busy_timeout=5000");

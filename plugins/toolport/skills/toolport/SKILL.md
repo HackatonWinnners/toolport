@@ -52,7 +52,8 @@ A run's `status` is `running`, `completed`, `provider_error`, `payment_unknown` 
 | `Payment does not match this tool's price, asset or recipient` or `Provider quote has no matching exact USDC option` | Quote and registry disagree | `search_tools` again for a fresh quote; report if it repeats |
 | A re-challenge naming an `invalidReason` (insufficient balance, missing trustline) or `Payment verification failed` | The payer wallet cannot pay | Fund or repair the wallet: `references/wallet.md` |
 | `Expected unpaid 402 challenge, received HTTP <n>` | An HTTP tool did not answer with a price | Pick another tool; report it |
-| ``No wallet. Run `toolport wallet create`, or pass --secret / STELLAR_SECRET_KEY.`` | No payer wallet configured | In Claude Code: ask the user to run `/toolport:setup`. Elsewhere: `references/wallet.md` |
+| ``No wallet. Run `toolport wallet create` or /toolport:setup, then call again.``, `get_budget` with `wallet: null`, or ``No wallet. Run `toolport wallet create`, or pass --secret / STELLAR_SECRET_KEY.`` from the CLI | No payer wallet configured; free tools still work | In Claude Code: ask the user to run `/toolport:setup`. Elsewhere: `references/wallet.md`. Once the wallet exists, call again with the same key: the router picks it up without a restart |
+| `Cannot read the wallet file <path>` or `Invalid Stellar secret key` | The wallet file or secret is broken | Tell the user; do not create a new wallet over it without asking |
 
 ## Guardrails
 

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -28,12 +29,29 @@ export async function saveWallet(wallet: StoredWallet) {
   return path;
 }
 
-/** --secret, then STELLAR_SECRET_KEY, then the saved wallet. */
+async function savedSecret() {
+  const wallet = await loadWallet();
+  if (typeof wallet?.secretKey === "string" && wallet.secretKey) return wallet.secretKey;
+  if (wallet || existsSync(walletPath())) throw new Error(`Cannot read the wallet file ${walletPath()}: expected JSON with a secretKey`);
+  return null;
+}
+
+/** --secret, then STELLAR_SECRET_KEY, then the saved wallet; null when none is configured. */
+export async function findSecret(flag?: string): Promise<string | null> {
+  const secret = flag ?? process.env.STELLAR_SECRET_KEY ?? (await savedSecret());
+  if (!secret) return null;
+  try {
+    Keypair.fromSecret(secret);
+  } catch {
+    throw new Error(`Invalid Stellar secret key (from ${flag ? "--secret" : process.env.STELLAR_SECRET_KEY ? "STELLAR_SECRET_KEY" : walletPath()})`);
+  }
+  return secret;
+}
+
 export async function resolveSecret(flag?: string): Promise<string> {
-  const secret = flag ?? process.env.STELLAR_SECRET_KEY ?? (await loadWallet())?.secretKey;
+  const secret = await findSecret(flag);
   if (!secret) {
     throw new Error("No wallet. Run `toolport wallet create`, or pass --secret / STELLAR_SECRET_KEY.");
   }
-  Keypair.fromSecret(secret); // validate
   return secret;
 }

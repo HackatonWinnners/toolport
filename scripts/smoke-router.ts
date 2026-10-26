@@ -5,7 +5,7 @@ import { pathToFileURL } from "node:url";
 import { Keypair } from "@stellar/stellar-sdk";
 import { AgentStore } from "@stellarpay/core";
 import { StellarPayClient } from "@stellarpay/mcp/client";
-import { ToolCatalog, ToolRouter, providerFetch } from "@stellarpay/router";
+import { ToolCatalog, ToolRouter, fixedWallet, providerFetch } from "@stellarpay/router";
 import { resolveSecret } from "../packages/cli/src/wallet.js";
 
 if (process.env.STELLAR_NETWORK && process.env.STELLAR_NETWORK !== "stellar:testnet") throw new Error("This smoke test only spends testnet USDC");
@@ -15,7 +15,8 @@ const store=await AgentStore.open({url:pathToFileURL(path).href,network:"stellar
 try {
   const fetcher=providerFetch();
   const catalog=new ToolCatalog({network:"stellar:testnet",gatewayUrl:process.env.STELLARPAY_GATEWAY_URL??"https://stellarpay-gateway-ten.vercel.app",fetcher});
-  const router=new ToolRouter(catalog,store,()=>new StellarPayClient({secretKey,store,maxPerCall:"0.05",budget:"1",verifyReceipts:true,fetcher}),"stellar:testnet",fetcher);
+  const buyer=()=>new StellarPayClient({secretKey,store,maxPerCall:"0.05",budget:"1",verifyReceipts:true,fetcher});
+  const router=new ToolRouter(catalog,fixedWallet({store,createBuyer:buyer},{maxPerCall:"0.05",budget:"1"}),buyer,"stellar:testnet",fetcher);
   const id=`registry:${process.env.STELLARPAY_SMOKE_SERVER_ID??"srv_02148cae805b"}:dex_best_path`;
   const input={id,args:{from:"XLM",to:"USDC",amount:"100"},maxAmount:"0.05",idempotencyKey:"router-smoke-paid-v1"};
   assert.equal((await router.quote(id,input.args,"0.05")).withinCap,true);

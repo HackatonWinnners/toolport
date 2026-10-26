@@ -27,7 +27,7 @@ export function agentPrompt(): string {
     "   Check: toolport --help",
     "",
     "If you are Claude Code:",
-    "2. Create the testnet wallet first, before the plugin, so its MCP server finds it on start. Skip if ~/.stellarpay/wallet.json already exists:",
+    "2. Create the testnet wallet first. Skip if ~/.stellarpay/wallet.json already exists:",
     "   STELLAR_NETWORK=stellar:testnet toolport wallet create --usdc 5",
     "   Then show me the address and balances with toolport wallet show. Never print the secret.",
     "3. Install the plugin from that checkout: claude plugin marketplace add ./ && claude plugin install toolport@toolport",
