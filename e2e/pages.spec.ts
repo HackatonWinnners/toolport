@@ -54,11 +54,9 @@ test.describe("S6 pages", () => {
     await expect(card).toHaveAttribute("data-source", "registry");
     await expect(card).toContainText(`${hasFree ? "free + " : ""}${usd(Math.min(...paid))}–${usd(Math.max(...paid))}/call`);
     await expect(page.getByTestId("catalog-count")).toHaveText(/^\d+ MCP servers? · \d+ APIs$/);
-    await expect(card.getByTestId("catalog-network")).toHaveText("testnet");
     await expect(card).not.toContainText(oracle.id);
     const mpp = page.locator('[data-testid="catalog-item"][data-source="mpp"]');
     expect(await mpp.count()).toBeGreaterThanOrEqual(12);
-    await expect(mpp.first().getByTestId("catalog-network")).toHaveText("mainnet");
     const icon = mpp.getByTestId("catalog-icon").first();
     await expect(icon).toBeVisible();
     expect(await icon.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);

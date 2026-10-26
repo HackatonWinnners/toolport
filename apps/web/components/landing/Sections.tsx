@@ -132,7 +132,7 @@ export function Catalog() {
           Browse all tools
         </Link>
       </div>
-      <ul className="m-0 grid list-none gap-3 p-0 [grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
+      <ul className="m-0 grid list-none auto-rows-fr gap-3 p-0 [grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))]">
         {CATALOG.map((tool) => (
           <li key={tool.name}>
             <Link
@@ -140,14 +140,16 @@ export function Catalog() {
               data-testid="catalog-card"
               className="box-border flex h-full flex-col gap-3 rounded-[18px] border border-line bg-panel p-5 text-fg no-underline transition-colors hover:border-[#4A473F]"
             >
-              <span className="flex items-baseline justify-between gap-3">
+              <span className="flex h-7 items-center justify-between gap-3">
                 <span className="flex min-w-0 items-center gap-2.5 text-[15px] font-medium">
                   <ProviderIcon src={tool.icon} provider={tool.name} />
-                  {tool.name}
+                  <span title={tool.name} className="truncate">
+                    {tool.name}
+                  </span>
                 </span>
-                <span className="text-xl font-semibold tracking-[-0.03em]">{tool.price}</span>
+                <span className="shrink-0 text-xl font-semibold leading-7 tracking-[-0.03em]">{tool.price}</span>
               </span>
-              <span className="text-sm leading-normal text-fg-soft">{tool.body}</span>
+              <span className="line-clamp-2 min-h-[2.625rem] text-sm leading-[1.3125rem] text-fg-soft">{tool.body}</span>
               <span className="mt-auto flex flex-wrap gap-1.5 text-xs text-muted">
                 {tool.tags.map((t) => (
                   <Pill key={t}>{t}</Pill>

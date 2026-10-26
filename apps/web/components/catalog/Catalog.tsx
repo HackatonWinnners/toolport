@@ -27,7 +27,6 @@ interface CatalogItem {
   description: string;
   price: string;
   badge: string;
-  network: "testnet" | "mainnet";
   verified: boolean;
   icon?: string;
   link: { href: string; label: string; ariaLabel: string; external: boolean } | null;
@@ -87,7 +86,6 @@ function fromServer(server: Server): CatalogItem {
     description: server.description,
     price: priceRange(server),
     badge: "MCP",
-    network: server.network === "stellar:pubnet" ? "mainnet" : "testnet",
     verified: false,
     link: {
       href: `/servers/${server.id}`,
@@ -105,10 +103,9 @@ function fromMpp(s: MppService): CatalogItem {
     name: s.name,
     provider: s.provider,
     category: s.category,
-    description: s.name.toLowerCase().includes(s.description.toLowerCase()) ? "" : s.description,
+    description: s.description,
     price: s.price,
     badge: s.method,
-    network: "mainnet",
     verified: s.verified,
     icon: s.icon,
     link: s.docs ? { href: s.docs, label: "Docs ↗", ariaLabel: `${s.name} docs (opens in a new tab)`, external: true } : null,
@@ -173,14 +170,6 @@ export function Catalog({ query }: { query: string }) {
         <h2 id="catalog-h" className="text-sm font-normal text-fg-soft" data-testid="catalog-count">
           {counts}
         </h2>
-        <span className="inline-flex flex-wrap items-center gap-x-4 gap-y-1 text-[12.5px] text-muted">
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-held" /> Toolport registry · testnet, test USDC
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-good" /> MPP Router · mainnet, real USDC
-          </span>
-        </span>
       </div>
 
       {bothDown ? (
@@ -252,9 +241,9 @@ export function Catalog({ query }: { query: string }) {
         <p className="text-muted">{q ? `Nothing matches “${query.trim()}”.` : "Nothing in this category yet."}</p>
       )}
 
-      <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid auto-rows-[9.5rem] gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {registry === null && mpp !== null && !q && !category && (
-          <li data-testid="catalog-registry-pending" aria-label="Loading Toolport registry servers">
+          <li data-testid="catalog-registry-pending" aria-label="Loading Toolport registry servers" className="[&>div]:h-full">
             <ApiCardSkeleton />
           </li>
         )}
@@ -263,39 +252,35 @@ export function Catalog({ query }: { query: string }) {
             key={item.key}
             data-testid="catalog-item"
             data-source={item.key.split(":")[0]}
-            className="flex min-w-0 flex-col gap-2 rounded-2xl border border-line bg-panel p-4"
+            className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-line bg-panel p-4"
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex min-w-0 items-start gap-2.5">
-                <span className="pt-px">
-                  <ProviderIcon src={item.icon} provider={item.provider} />
-                </span>
-                <h3 className="min-w-0 text-[15px] font-semibold leading-snug text-fg">{item.name}</h3>
-              </div>
-              <span className="shrink-0 rounded-full bg-raised px-2 py-0.5 font-mono text-[11px] text-fg-soft">{item.badge}</span>
+            <div className="flex h-6 items-center gap-2.5">
+              <ProviderIcon src={item.icon} provider={item.provider} />
+              <h3 title={item.name} className="min-w-0 flex-1 truncate text-[15px] font-semibold leading-6 text-fg">
+                {item.name}
+              </h3>
+              <span className="shrink-0 rounded-full bg-raised px-2 py-0.5 font-mono text-[11px] leading-4 text-fg-soft">{item.badge}</span>
             </div>
-            {item.description && <p className="line-clamp-2 text-xs leading-relaxed text-fg-soft">{item.description}</p>}
-            <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-xs">
-              <span className="font-mono text-fg">{item.price}</span>
-              <span className={item.category === "mcp" ? "text-muted" : "capitalize text-muted"}>{label(item.category)}</span>
-              <span data-testid="catalog-network" className="inline-flex items-center gap-1 text-muted">
-                <span className={`h-1.5 w-1.5 rounded-full ${item.network === "testnet" ? "bg-held" : "bg-good"}`} />
-                {item.network}
+            <p className="mt-2 line-clamp-2 h-[2.5rem] text-xs leading-5 text-fg-soft">{item.description}</p>
+            <div className="mt-auto flex h-5 items-center gap-3 text-xs leading-5">
+              <span title={item.price} className="min-w-0 truncate font-mono text-fg">
+                {item.price}
               </span>
-              {item.verified && <span className="text-good">paid run verified</span>}
+              <span className={`shrink-0 text-muted ${item.category === "mcp" ? "" : "capitalize"}`}>{label(item.category)}</span>
+              {item.verified && <span className="shrink-0 text-good">verified</span>}
               {item.link?.external && (
                 <a
                   href={item.link.href}
                   target="_blank"
                   rel="noreferrer"
                   aria-label={item.link.ariaLabel}
-                  className="ml-auto text-accent hover:underline"
+                  className="ml-auto shrink-0 text-accent hover:underline"
                 >
                   {item.link.label}
                 </a>
               )}
               {item.link && !item.link.external && (
-                <Link href={item.link.href} aria-label={item.link.ariaLabel} className="ml-auto text-accent hover:underline">
+                <Link href={item.link.href} aria-label={item.link.ariaLabel} className="ml-auto shrink-0 text-accent hover:underline">
                   {item.link.label}
                 </Link>
               )}
