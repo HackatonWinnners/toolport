@@ -64,17 +64,6 @@ export function ApiCardSkeleton() {
   );
 }
 
-export function CatalogSkeleton() {
-  return (
-    <LoadingState caption="Loading the catalog">
-      <div className="grid gap-4 lg:grid-cols-2">
-        <ServerCardSkeleton />
-        <ServerCardSkeleton />
-      </div>
-    </LoadingState>
-  );
-}
-
 export function ApiGridSkeleton({ caption }: { caption: string }) {
   return (
     <LoadingState caption={caption}>

@@ -56,7 +56,7 @@ export function CopyButton({ value, label = "Copy" }: { value: string; label?: s
 export function Code({ children }: { children: string }) {
   return (
     <div className="relative">
-      <pre className="overflow-x-auto rounded-[10px] border border-line bg-ink p-3 font-mono text-xs leading-relaxed text-fg-soft">
+      <pre className="overflow-x-auto rounded-[10px] border border-line bg-ink p-3 pt-11 sm:pr-20 sm:pt-3 font-mono text-xs leading-relaxed text-fg-soft">
         {children}
       </pre>
       <div className="absolute right-2 top-2">

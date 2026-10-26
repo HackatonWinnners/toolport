@@ -20,23 +20,27 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
   return (
     <div className="tpx min-h-screen bg-ink font-sans text-fg">
       <header className="sticky top-0 z-10 border-b border-raised bg-[rgba(27,26,23,0.86)] backdrop-blur-md">
-        <div className="mx-auto box-border flex max-w-[1200px] items-center justify-between gap-4 px-4 py-3.5 sm:px-6">
+        <div className="mx-auto box-border flex max-w-[1200px] flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-3.5 sm:flex-nowrap sm:px-6">
           <Link href="/" aria-label="Toolport home" className="flex items-center gap-[9px] text-[22px] text-fg no-underline">
             <Brand size={36} animated />
           </Link>
-          <nav aria-label="Primary" className="hidden gap-[26px] text-sm lg:flex">
-            <a href="#how" className={navLink}>How it works</a>
-            <a href="#proof" className={navLink}>Proof</a>
-            <a href="#catalog" className={navLink}>Catalog</a>
-            <a href="#sell" className={navLink}>For sellers</a>
+          <nav
+            aria-label="Primary"
+            data-testid="landing-nav"
+            className="order-last flex w-full gap-[26px] text-sm sm:order-none sm:w-auto"
+          >
+            <Link href="/catalog" className={navLink}>Catalog</Link>
+            <Link href="/dashboard" className={navLink}>Sell</Link>
             {DOCS_URL && (
               <a href={DOCS_URL} target="_blank" rel="noreferrer" className={navLink}>Docs</a>
             )}
           </nav>
           <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-1.5 text-[12.5px] text-muted sm:inline-flex">
+            <span className="hidden items-center gap-1.5 text-[12.5px] text-muted lg:inline-flex">
               <span className="h-1.5 w-1.5 rounded-full bg-held" />
-              Stellar testnet
+              Testnet registry
+              <span className="ml-1.5 h-1.5 w-1.5 rounded-full bg-good" />
+              Mainnet APIs
             </span>
             <Link
               href="/#connect"
@@ -67,7 +71,7 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
             <a href="#sell" className={navLink}>For sellers</a>
             <Link href="/pitch" className={navLink}>Pitch</Link>
           </nav>
-          <span className="text-[13px] text-muted">Stellar testnet only · test USDC</span>
+          <span className="text-[13px] text-muted">Registry on Stellar testnet (test USDC) · MPP Router APIs on mainnet (real USDC)</span>
         </div>
       </footer>
     </div>

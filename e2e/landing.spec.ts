@@ -23,14 +23,26 @@ test.describe("S1 landing", () => {
     expect(body.font).toMatch(/Geist/i);
   });
 
-  test("S1 section anchors scroll", async ({ page }) => {
+  test("S1 landing sections are all there", async ({ page }) => {
     await page.goto("/");
-    for (const id of ["how", "proof", "catalog", "sell"]) {
-      await page.locator(`a[href="#${id}"], a[href="/#${id}"]`).first().click();
-      await expect(page).toHaveURL(new RegExp(`#${id}$`));
-      await expect(page.locator(`#${id}`)).toBeInViewport();
-    }
+    for (const id of ["how", "proof", "catalog", "sell", "connect"]) await expect(page.locator(`#${id}`)).toHaveCount(1);
   });
+
+  for (const width of [1440, 375]) {
+    test(`S1 header links go to the app pages at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/");
+      const nav = page.getByTestId("landing-nav");
+      await expect(nav).toBeVisible();
+      const hrefs = await nav.locator("a[href]").evaluateAll((as) => as.map((a) => a.getAttribute("href")));
+      expect(hrefs.filter((h) => h?.startsWith("#") || h?.startsWith("/#"))).toEqual([]);
+      await nav.getByRole("link", { name: "Catalog", exact: true }).click();
+      await expect(page).toHaveURL(/\/catalog$/);
+      await page.goto("/");
+      await page.getByTestId("landing-nav").getByRole("link", { name: "Sell", exact: true }).click();
+      await expect(page).toHaveURL(/\/dashboard$/);
+    });
+  }
 
   test("S1 how-it-works advances and pauses", async ({ page }) => {
     await page.goto("/");

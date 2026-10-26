@@ -44,7 +44,6 @@ export function AppHeader() {
           )}
         </nav>
         <div className="flex w-full flex-wrap items-center gap-3 sm:ml-auto sm:w-auto">
-          <BudgetPill />
           <NetworkPill />
           <div className="ml-auto sm:ml-0">
             <WalletButton />
@@ -60,12 +59,18 @@ function NetworkPill() {
   return (
     <span data-testid="network-pill" className="inline-flex items-center gap-1.5 text-[12.5px] text-muted">
       <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${testnet ? "bg-held" : "bg-good"}`} />
-      {testnet ? "Testnet" : "Mainnet"}
+      {testnet ? "Testnet registry" : "Mainnet"}
+      {testnet && (
+        <>
+          <span aria-hidden="true" className="ml-1.5 h-1.5 w-1.5 rounded-full bg-good" />
+          Mainnet APIs
+        </>
+      )}
     </span>
   );
 }
 
-function BudgetPill() {
+export function BudgetPill() {
   const { budget, updateBudget } = useAgent();
   if (!budget) return <span className="h-10 w-48 rounded-xl border border-line bg-panel" aria-hidden="true" />;
   const remaining = Math.max(0, budget.capUnits - budget.spentUnits);

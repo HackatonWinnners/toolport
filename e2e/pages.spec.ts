@@ -1,7 +1,9 @@
+import { usd } from "../apps/web/lib/api";
+import { GATEWAY_URL } from "./env";
 import { expect, oracleServer, test } from "./fixtures";
 
-// S6 Pages. The redirect and nav checks run on WP-0's shell; catalog-server and seller-connect
-// need WP-C.
+// S6 Pages. The redirect and nav checks run on WP-0's shell. The catalog is one grid: registry servers
+// from the gateway first, then MPP Router APIs from public/catalog/mpprouter.json. seller-connect needs WP-C.
 
 test.describe("S6 pages", () => {
   test("S6 /registry redirects to /catalog", async ({ page }) => {
@@ -40,24 +42,67 @@ test.describe("S6 pages", () => {
     expect(watch.errors).toEqual([]);
   });
 
-  test("S6 catalog lists Stellar Oracle with prices", async ({ page, watch }) => {
+  test("S6 catalog shows registry servers and MPP Router APIs in one grid", async ({ page, watch }) => {
     const oracle = await oracleServer();
+    const paid = oracle.tools.filter((t) => t.paid).map((t) => Number(t.priceUsd));
+    const hasFree = oracle.tools.some((t) => !t.paid);
     await page.goto("/catalog");
-    const card = page.getByTestId("catalog-server").filter({ hasText: "Stellar Oracle" });
+    const items = page.getByTestId("catalog-item");
+    await expect(items.first()).toHaveAttribute("data-source", "registry");
+    const card = items.filter({ hasText: "Stellar Oracle" });
     await expect(card).toHaveCount(1);
-    for (const tool of oracle.tools.filter((t) => t.paid)) {
-      await expect(card).toContainText(`$${Number(tool.priceUsd).toFixed(2)}`);
-    }
+    await expect(card).toHaveAttribute("data-source", "registry");
+    await expect(card).toContainText(`${hasFree ? "free + " : ""}${usd(Math.min(...paid))}–${usd(Math.max(...paid))}/call`);
+    await expect(page.getByTestId("catalog-count")).toHaveText(/^\d+ MCP servers? · \d+ APIs$/);
+    await expect(card.getByTestId("catalog-network")).toHaveText("testnet");
+    await expect(card).not.toContainText(oracle.id);
+    const mpp = page.locator('[data-testid="catalog-item"][data-source="mpp"]');
+    expect(await mpp.count()).toBeGreaterThanOrEqual(12);
+    await expect(mpp.first().getByTestId("catalog-network")).toHaveText("mainnet");
+    const icon = mpp.getByTestId("catalog-icon").first();
+    await expect(icon).toBeVisible();
+    expect(await icon.evaluate((img) => (img as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    await card.getByRole("link", { name: /^Stellar Oracle: \d+ tools?$/ }).click();
+    await expect(page).toHaveURL(new RegExp(`/servers/${oracle.id}$`));
     expect(watch.errors).toEqual([]);
   });
 
-  test("S6 catalog tools point to connecting an agent", async ({ page }) => {
+  test("S6 one search covers registry tools and MPP Router APIs", async ({ page }) => {
     await page.goto("/catalog");
-    const card = page.getByTestId("catalog-server").filter({ hasText: "Stellar Oracle" });
-    await expect(card.locator('a[href*="/playground"]')).toHaveCount(0);
-    await card.getByRole("link", { name: /Use it from your agent/i }).first().click();
-    await expect(page).toHaveURL(/\/#connect$/);
-    await expect(page.getByTestId("connect-config")).toBeVisible();
+    const items = page.getByTestId("catalog-item");
+    await expect(items.first()).toBeVisible();
+    const search = page.getByRole("textbox", { name: "Search tools and APIs" });
+    await search.fill("dex_best_path");
+    await expect(items).toHaveCount(1);
+    await expect(items.first()).toContainText("Stellar Oracle");
+    await search.fill("brave search");
+    await expect(items.first()).toContainText("Brave Search");
+    for (const text of await items.allTextContents()) expect(text).toContain("Brave Search");
+  });
+
+  test("S6 catalog shows MPP Router APIs while the gateway hangs", async ({ page }) => {
+    await page.route(`${GATEWAY_URL}/**`, () => {});
+    await page.goto("/catalog");
+    await expect(page.locator('[data-testid="catalog-item"][data-source="mpp"]').first()).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByTestId("catalog-registry-pending")).toBeVisible();
+    await expect(page.getByTestId("catalog-count")).toContainText("loading the registry");
+  });
+
+  test("S6 catalog explains when both sources are down", async ({ page }) => {
+    await page.route(`${GATEWAY_URL}/**`, (route) => route.abort("connectionrefused"));
+    await page.route("**/catalog/mpprouter.json", (route) => route.abort("connectionrefused"));
+    await page.goto("/catalog");
+    await expect(page.getByTestId("catalog-down")).toBeVisible();
+    await expect(page.getByText(/Nothing matches/)).toHaveCount(0);
+    await expect(page.getByTestId("catalog-item")).toHaveCount(0);
+  });
+
+  test("S6 catalog still lists MPP Router APIs when the gateway is down", async ({ page }) => {
+    await page.route(`${GATEWAY_URL}/**`, (route) => route.abort("connectionrefused"));
+    await page.goto("/catalog");
+    await expect(page.getByTestId("catalog-partial")).toBeVisible();
+    await expect(page.locator('[data-testid="catalog-item"][data-source="mpp"]').first()).toBeVisible();
+    await expect(page.locator('[data-testid="catalog-item"][data-source="registry"]')).toHaveCount(0);
   });
 
   test("S6 /dashboard shows seller-connect", async ({ page, watch }) => {

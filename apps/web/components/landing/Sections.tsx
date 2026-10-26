@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/components/brand/Logo";
 import { StatusDot } from "@/components/brand/StatusDot";
+import { ProviderIcon } from "@/components/catalog/Catalog";
 import { CopyButton } from "@/components/ui";
 import { DOCS_URL, FAUCET_URL, routerConfig, txUrl } from "@/lib/api";
 import { HowItWorks } from "./HowItWorks";
@@ -107,11 +108,13 @@ export function Proof() {
   );
 }
 
-// Registry tools come from apps/demo-server (Stellar Oracle).
 const CATALOG = [
-  { name: "dex_best_path", mono: true, price: "$0.02", body: "Best swap path between two Stellar assets.", tags: ["Stellar Oracle", "Toolport registry", "MCP tool"] },
-  { name: "account_summary", mono: true, price: "$0.01", body: "Balances and recent operations for a Stellar account.", tags: ["Toolport registry", "MCP tool"] },
-  { name: "ping", mono: true, price: "free", body: "Check the server is reachable. Costs nothing.", tags: ["Toolport registry", "MCP tool"] },
+  { name: "Firecrawl – Scrape a URL", price: "$0.002", body: "Scrape any web page by URL.", tags: ["MPP Router", "Mainnet", "Web"], icon: "/catalog/icons/docs.firecrawl.dev.png" },
+  { name: "Exa – Neural web search", price: "from $0.007", body: "Neural web search, from instant to deep research.", tags: ["MPP Router", "Mainnet", "Search"], icon: "/catalog/icons/docs.exa.ai.png" },
+  { name: "Mercury – Soroban transactions", price: "$0.001", body: "Soroban transactions for a contract.", tags: ["MPP Router", "Mainnet", "Blockchain"], icon: "/catalog/icons/docs.mercurydata.app.png" },
+  { name: "OpenWeather – Current weather", price: "$0.006", body: "Current weather for a location.", tags: ["MPP Router", "Mainnet", "Data"], icon: "/catalog/icons/openweathermap.org.ico" },
+  { name: "Stellar Oracle – DEX best path", price: "$0.02", body: "Best swap path between two Stellar assets.", tags: ["Toolport registry", "Testnet"] },
+  { name: "CoinGecko – Simple price", price: "$0.06", body: "Current coin prices.", tags: ["MPP Router", "Mainnet", "Data"], icon: "/catalog/icons/docs.coingecko.com.png" },
 ];
 
 export function Catalog() {
@@ -119,10 +122,10 @@ export function Catalog() {
     <Section id="catalog" labelledBy="cat-h" className="flex flex-col gap-8 pb-10 pt-20 sm:pt-28">
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="flex max-w-[640px] flex-col gap-3.5">
-          <H2 id="cat-h">Tools from a cent a call.</H2>
+          <H2 id="cat-h">Tools from a tenth of a cent.</H2>
           <p className="m-0 text-[17px] leading-[1.6] text-fg-soft">
-            The Toolport registry, plus 448 paid APIs from MPP Router on Stellar mainnet: search, LLMs, market data
-            and more. One connection, the price before every call.
+            One catalog: MCP servers from the Toolport registry on testnet and 448 paid APIs from MPP Router on
+            mainnet, from search and LLMs to market data. The price before every call.
           </p>
         </div>
         <Link href="/catalog" className={`${ghost} h-11 px-[18px] text-[15px]`}>
@@ -138,7 +141,10 @@ export function Catalog() {
               className="box-border flex h-full flex-col gap-3 rounded-[18px] border border-line bg-panel p-5 text-fg no-underline transition-colors hover:border-[#4A473F]"
             >
               <span className="flex items-baseline justify-between gap-3">
-                <span className={`text-[15px] font-medium ${tool.mono ? "font-mono" : ""}`}>{tool.name}</span>
+                <span className="flex min-w-0 items-center gap-2.5 text-[15px] font-medium">
+                  <ProviderIcon src={tool.icon} provider={tool.name} />
+                  {tool.name}
+                </span>
                 <span className="text-xl font-semibold tracking-[-0.03em]">{tool.price}</span>
               </span>
               <span className="text-sm leading-normal text-fg-soft">{tool.body}</span>
@@ -250,16 +256,17 @@ const FAQ: [string, ReactNode][] = [
   ],
   [
     "Where do the tools come from?",
-    "From the Toolport registry: any MCP server a seller lists, priced per tool. One MCP connection covers all of them.",
+    "From one shared catalog with two sources. MCP servers that sellers list in the Toolport registry, like Stellar Oracle, run on Stellar testnet. 448 paid APIs from MPP Router run on Stellar mainnet. Your agent reaches them through two separate router runs: the default one for the registry, and a mainnet one with the MPP Router manifest.",
   ],
   [
     "Is this real money?",
     <>
-      Not yet. Toolport runs on Stellar testnet with test USDC. Get some from the{" "}
+      It depends on the source. The Toolport registry runs on Stellar testnet with test USDC; get some from the{" "}
       <Ext href={FAUCET_URL} className="text-accent hover:text-fg">
         testnet faucet
       </Ext>
-      .
+      . MPP Router APIs are on Stellar mainnet and cost real USDC, through a separate router run with its own funded
+      mainnet wallet and caps.
     </>,
   ],
 ];

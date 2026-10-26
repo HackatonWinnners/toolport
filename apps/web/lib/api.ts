@@ -79,7 +79,11 @@ export async function api<T>(path: string, init: RequestInit & { token?: string 
 
 export const usd = (value: string | number) => {
   const n = Number(value);
-  return n === 0 ? "free" : n < 0.01 ? `$${n.toString()}` : `$${n.toFixed(2)}`;
+  if (!Number.isFinite(n)) return String(value);
+  if (n === 0) return "free";
+  if (Number.isInteger(n)) return `$${n}`;
+  const [whole, fraction] = n.toFixed(7).split(".");
+  return `$${whole}.${fraction.replace(/0+$/, "").padEnd(2, "0")}`;
 };
 
 export const short = (address: string) => `${address.slice(0, 4)}…${address.slice(-4)}`;
@@ -104,9 +108,36 @@ export function claudeDesktopConfig(urls: string[]) {
   return JSON.stringify({ mcpServers: { toolport: cliCommand(bridgeArgs) } }, null, 2);
 }
 
+function registryRouterArgs() {
+  const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(GATEWAY_URL);
+  return ["router", "--gateway", GATEWAY_URL, ...(local ? ["--allow-local"] : []), "--max-per-call", "0.05", "--budget", "1"];
+}
+
+export const MAINNET_MAX_PER_CALL = 0.1;
+export const MAINNET_WALLET = "$HOME/.stellarpay/mainnet/wallet.json";
+
+const shellWord = (word: string) => (/^[\w@%+=:,./-]+$/.test(word) ? word : `'${word.replace(/'/g, "'\\''")}'`);
+function shellLine({ command, args }: { command: string; args: string[] }) {
+  const firstFlag = args.findIndex((a) => a.startsWith("--"));
+  const head = firstFlag < 0 ? args.length : firstFlag;
+  const lines = [[command, ...args.slice(0, head)]];
+  for (const arg of args.slice(head)) {
+    if (arg.startsWith("--")) lines.push([arg]);
+    else lines[lines.length - 1].push(arg);
+  }
+  return lines.map((words) => words.map(shellWord).join(" ")).join(" \\\n  ");
+}
+
 /** Claude Desktop config for the discovery router: one MCP for every tool in the catalog, under a budget. */
 export function routerConfig(): string {
-  const local = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:|\/|$)/.test(GATEWAY_URL);
-  const args = ["router", "--gateway", GATEWAY_URL, ...(local ? ["--allow-local"] : []), "--max-per-call", "0.05", "--budget", "1", "--session", "claude"];
-  return JSON.stringify({ mcpServers: { toolport: cliCommand(args) } }, null, 2);
+  return JSON.stringify({ mcpServers: { toolport: cliCommand([...registryRouterArgs(), "--session", "claude"]) } }, null, 2);
+}
+
+export function registryRouterCommand(): string {
+  return shellLine(cliCommand(registryRouterArgs()));
+}
+
+export function mppRouterCommand(): string {
+  const args = ["router", "--network", "stellar:pubnet", "--manifest", "catalog/mpprouter.mainnet.json", "--max-per-call", MAINNET_MAX_PER_CALL.toFixed(2), "--budget", "1"];
+  return `STELLARPAY_WALLET=${MAINNET_WALLET} \\\nSTELLAR_RPC_URL=https://YOUR_MAINNET_RPC \\\n${shellLine(cliCommand(args))}`;
 }
