@@ -9,7 +9,11 @@ const config: NextConfig = {
   // Always inline the e2e flag (Next skips unset vars), so lib/signer.ts's test branch is dropped from normal builds.
   env: { NEXT_PUBLIC_E2E_SIGNER: process.env.NEXT_PUBLIC_E2E_SIGNER === "true" ? "true" : "false" },
   async redirects() {
-    return [{ source: "/registry", destination: "/catalog", permanent: false }];
+    return [
+      { source: "/registry", destination: "/catalog", permanent: false },
+      { source: "/playground", destination: "/#connect", permanent: false },
+      { source: "/activity", destination: "/catalog", permanent: false },
+    ];
   },
 };
 

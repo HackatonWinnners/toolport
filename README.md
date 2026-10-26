@@ -72,7 +72,7 @@ npm run cli -- tools http://localhost:4021/v1/mcp/<serverId>
 npm run cli -- call http://localhost:4021/v1/mcp/<serverId> dex_best_path '{"from":"XLM","to":"USDC","amount":"100"}' --max-per-call 0.05
 ```
 
-Web routes: `/` landing, `/playground` (find a tool, price it, run it), `/catalog` (public registry), `/activity`, `/dashboard` (**Sell**: register and price servers), `/servers/[id]` (server detail).
+Web routes: `/` landing (with `#connect` for wiring up your agent), `/catalog` (public registry), `/dashboard` (**Sell**: register and price servers), `/servers/[id]` (server detail), `/pitch` (pitch deck). The browser playground and Activity page are on the roadmap: their code is kept under `apps/web/app/(app)/_playground` and `_activity`, and `/playground` and `/activity` redirect to `/#connect` and `/catalog`.
 
 ## Quickstart: Docker Compose
 
@@ -305,7 +305,7 @@ sequenceDiagram
 | [`packages/router`](packages/router) | Catalog adapters (registry, manifests), search, schema validation, unpaid quotes, durable runs and the discovery MCP |
 | [`packages/cli`](packages/cli) | `toolport` CLI (alias `stellarpay`): `router`, `connect`, `wallet create/show/buy-usdc`, `tools`, `call`, `budget` |
 | [`apps/gateway`](apps/gateway) | Hono gateway: paid MCP proxy at `/v1/mcp/:serverId` plus a REST API (wallet sign-in, registration, pricing, call log, stats), SQLite/libsql via Drizzle |
-| [`apps/web`](apps/web) | Next.js web app: landing, playground, catalog, activity, seller dashboard with Freighter sign-in, server pages with revenue and transaction links |
+| [`apps/web`](apps/web) | Next.js web app: landing, catalog, seller dashboard with Freighter sign-in, server pages with revenue and transaction links |
 | [`apps/demo-server`](apps/demo-server) | "Stellar Oracle" MCP server: `ping` (free), `account_summary` ($0.01), `dex_best_path` ($0.02, Horizon path finding) |
 | [`Dockerfile`](Dockerfile), [`docker-compose.yml`](docker-compose.yml) | Images for `web`, `gateway` and `demo`, and the Compose setup used by Coolify |
 

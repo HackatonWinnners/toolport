@@ -43,7 +43,7 @@ async function horizonTransaction(request: APIRequestContext, hash: string) {
   return { status: res.status(), successful: body.successful };
 }
 
-test.describe("playground", () => {
+test.describe.skip("playground (unrouted while it is on the roadmap)", () => {
   test("S2 quote: price said out loud, nothing signed", async ({ page, watch, signer }) => {
     const option = await askForSwap(page);
     await expect(option).toContainText("$0.02");

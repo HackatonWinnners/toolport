@@ -97,10 +97,10 @@ export default function CatalogPage() {
                         <div className="text-xs leading-relaxed text-fg-soft">{tool.description}</div>
                       )}
                       <Link
-                        href={`/playground?tool=${encodeURIComponent(server.id)}:${encodeURIComponent(tool.name)}`}
+                        href="/#connect"
                         className="inline-block text-xs text-accent hover:underline"
                       >
-                        Try in playground →
+                        Use it from your agent →
                       </Link>
                     </div>
                     <span

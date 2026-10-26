@@ -109,9 +109,9 @@ export function Proof() {
 
 // Registry tools come from apps/demo-server (Stellar Oracle).
 const CATALOG = [
-  { name: "dex_best_path", mono: true, price: "$0.02", body: "Best swap path between two Stellar assets.", tags: ["Stellar Oracle", "Toolport registry", "MCP tool"], q: "dex_best_path" },
-  { name: "account_summary", mono: true, price: "$0.01", body: "Balances and recent operations for a Stellar account.", tags: ["Toolport registry", "MCP tool"], q: "account_summary" },
-  { name: "ping", mono: true, price: "free", body: "Check the server is reachable. Costs nothing.", tags: ["Toolport registry", "MCP tool"], q: "ping" },
+  { name: "dex_best_path", mono: true, price: "$0.02", body: "Best swap path between two Stellar assets.", tags: ["Stellar Oracle", "Toolport registry", "MCP tool"] },
+  { name: "account_summary", mono: true, price: "$0.01", body: "Balances and recent operations for a Stellar account.", tags: ["Toolport registry", "MCP tool"] },
+  { name: "ping", mono: true, price: "free", body: "Check the server is reachable. Costs nothing.", tags: ["Toolport registry", "MCP tool"] },
 ];
 
 export function Catalog() {
@@ -133,7 +133,7 @@ export function Catalog() {
         {CATALOG.map((tool) => (
           <li key={tool.name}>
             <Link
-              href={`/playground?q=${encodeURIComponent(tool.q)}`}
+              href="/catalog"
               data-testid="catalog-card"
               className="box-border flex h-full flex-col gap-3 rounded-[18px] border border-line bg-panel p-5 text-fg no-underline transition-colors hover:border-[#4A473F]"
             >
@@ -241,7 +241,7 @@ const FAQ: [string, ReactNode][] = [
   ],
   [
     "What if a payment's outcome is unknown?",
-    "It stays held: counted against your budget, never treated as free. You can check it on-chain later, or release it from Activity.",
+    "It stays held: counted against your budget, never treated as free. You can check it on-chain later.",
   ],
   ["Will I pay twice for the same request?", "No. Repeating the same request returns the stored result instead of paying again."],
   [
@@ -303,19 +303,10 @@ export function Closing() {
           Plug your agent in.
         </h2>
         <p className="m-0 text-[17px] text-fg-soft">
-          Try the whole flow in the browser, or give your agent one config block.
+          Give your agent one config block and it can find, price and pay for tools on its own.
         </p>
       </div>
       <div className="flex w-full flex-wrap gap-4">
-        <div className="flex min-w-0 flex-[1_1_360px] flex-col gap-3.5 rounded-[22px] border border-line bg-panel p-5 sm:p-7">
-          <span className="text-xl font-semibold tracking-[-0.03em]">Try it in the browser</span>
-          <p className="m-0 text-[15px] leading-[1.6] text-fg-soft">
-            Connect Freighter, set a budget, and run a paid tool end to end. Nothing to install.
-          </p>
-          <Link href="/playground" className={`${cta} mt-auto h-12 self-start px-5 text-[15px]`}>
-            Open the playground
-          </Link>
-        </div>
         <div className="flex min-w-0 flex-[1.4_1_420px] flex-col gap-3.5 rounded-[22px] border border-line bg-panel p-5 sm:p-7">
           <div className="flex items-center justify-between gap-3">
             <span className="text-xl font-semibold tracking-[-0.03em]">Connect your agent</span>

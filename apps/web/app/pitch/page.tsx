@@ -83,8 +83,8 @@ function Title() {
         <span className="inline-flex items-center gap-1.5 text-[13px] text-muted">
           <span className="h-1.5 w-1.5 rounded-full bg-held" /> Live on Stellar testnet
         </span>
-        <Link href="/playground" className="ml-auto rounded-xl bg-fg px-4 py-2.5 text-sm font-medium text-ink hover:bg-white">
-          Try it in the browser
+        <Link href="/#connect" className="ml-auto rounded-xl bg-fg px-4 py-2.5 text-sm font-medium text-ink hover:bg-white">
+          Connect your agent
         </Link>
       </div>
     </div>

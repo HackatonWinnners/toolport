@@ -39,11 +39,11 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
               Stellar testnet
             </span>
             <Link
-              href="/playground"
+              href="/#connect"
               data-testid="nav-open-app"
               className="inline-flex h-10 items-center rounded-xl bg-fg px-4 text-sm font-medium text-ink no-underline transition-colors hover:bg-white"
             >
-              Open the app
+              Connect your agent
             </Link>
           </div>
         </div>

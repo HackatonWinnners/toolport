@@ -19,13 +19,13 @@ export function Hero() {
           USDC on Stellar. Every purchase comes back with an on-chain receipt.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link href="/playground" className={`${cta} h-[52px] rounded-[14px] px-[22px] text-base`}>
-            Try it in the browser
-          </Link>
-          <a href="#connect" className={`${ghost} h-[52px] gap-2.5 rounded-[14px] px-[22px] text-base`}>
+          <a href="#connect" className={`${cta} h-[52px] gap-2.5 rounded-[14px] px-[22px] text-base`}>
             Connect your agent
-            <span className="font-mono text-[12.5px] text-muted">toolport router</span>
+            <span className="font-mono text-[12.5px] opacity-60">toolport router</span>
           </a>
+          <Link href="/catalog" className={`${ghost} h-[52px] rounded-[14px] px-[22px] text-base`}>
+            Browse the catalog
+          </Link>
         </div>
         <ul className="m-0 mt-2 flex list-none flex-wrap gap-x-[22px] gap-y-2 p-0 text-sm text-fg-soft">
           <li>No API keys</li>

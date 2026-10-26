@@ -5,7 +5,7 @@ import { Code } from "@/components/ui";
 import { ApiGridSkeleton } from "@/components/brand/Skeleton";
 
 // MPP Router's paid APIs on Stellar mainnet, from public/catalog/mpprouter.json (scripts/import-mpprouter.mjs).
-// The browser playground runs on testnet, so these are bought by an agent through the router.
+// The Toolport registry runs on testnet, so these are bought by an agent through the router on mainnet.
 
 interface MppService {
   id: string;
@@ -63,7 +63,7 @@ export function MppCatalog({ query }: { query: string }) {
           </h2>
           <p className="text-[15px] leading-relaxed text-fg-soft">
             Search, LLMs, market data, maps, scraping and more, paid per request in USDC on Stellar mainnet. Your agent
-            buys them through the Toolport router under the same caps; the browser playground stays on testnet.
+            buys them through the Toolport router under the same caps; the Toolport registry stays on testnet.
           </p>
         </div>
         <span className="inline-flex items-center gap-1.5 text-[12.5px] text-muted">

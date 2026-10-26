@@ -75,10 +75,16 @@ test.describe("S1 landing", () => {
     expect(open).toBe(true);
   });
 
-  test("S1 nav-open-app goes to the playground", async ({ page }) => {
+  test("S1 nav-open-app goes to connecting an agent", async ({ page }) => {
     await page.goto("/");
     await page.getByTestId("nav-open-app").first().click();
-    await expect(page).toHaveURL(/\/playground(\?|$)/);
+    await expect(page).toHaveURL(/#connect$/);
+    await expect(page.locator("#connect")).toBeInViewport();
+  });
+
+  test("S1 landing has no playground links", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator('a[href*="/playground"], a[href*="/activity"]')).toHaveCount(0);
   });
 
   test("S1 no horizontal scroll at 375px, screenshots", async ({ page, watch }, testInfo) => {

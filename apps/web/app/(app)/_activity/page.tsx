@@ -22,7 +22,7 @@ export default function ActivityPage() {
         <div>
           <h1 className="text-[28px] font-semibold tracking-[-0.04em]">Activity</h1>
           <p className="mt-1 text-sm text-muted">
-            Runs from this browser&apos;s playground. Every paid call links to its USDC transaction on Stellar.
+            Runs from this browser. Every paid call links to its USDC transaction on Stellar.
           </p>
         </div>
         {budget && (
@@ -35,8 +35,8 @@ export default function ActivityPage() {
       {budget && runs.length === 0 ? (
         <div className="rounded-2xl border border-line bg-panel p-8 text-center">
           <p className="text-fg-soft">No runs yet.</p>
-          <Link href="/playground" className="mt-2 inline-block text-sm text-accent hover:text-fg">
-            Try a tool in the playground
+          <Link href="/#connect" className="mt-2 inline-block text-sm text-accent hover:text-fg">
+            Connect your agent
           </Link>
         </div>
       ) : (

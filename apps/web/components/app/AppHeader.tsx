@@ -10,9 +10,7 @@ import { toUnits, usdc } from "@/lib/buyer";
 import { Popover } from "./Popover";
 
 const NAV = [
-  { href: "/playground", label: "Playground" },
   { href: "/catalog", label: "Catalog" },
-  { href: "/activity", label: "Activity" },
   { href: "/dashboard", label: "Sell" },
 ];
 
