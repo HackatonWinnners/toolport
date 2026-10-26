@@ -1,0 +1,35 @@
+{
+  "name": "toolport",
+  "displayName": "Toolport",
+  "version": "0.1.0",
+  "description": "Find paid MCP and HTTP tools, see the exact price, and pay per call in USDC on Stellar testnet under a per-call cap and a session budget",
+  "author": { "name": "HackatonWinnners" },
+  "homepage": "https://toolport.042067.xyz",
+  "repository": "https://github.com/HackatonWinnners/toolport",
+  "keywords": ["mcp", "x402", "stellar", "usdc", "payments"],
+  "userConfig": {
+    "gateway_url": { "type": "string", "title": "Gateway URL", "description": "Toolport registry and paid MCP gateway", "default": "https://api.toolport.042067.xyz" },
+    "max_per_call": { "type": "string", "title": "Max USDC per call", "description": "Refuse any single call priced above this", "default": "0.05" },
+    "budget": { "type": "string", "title": "Session budget (USDC)", "description": "Persistent cap for this session name; spent and pending amounts never reset", "default": "1" },
+    "session": { "type": "string", "title": "Budget session name", "description": "Budget scope in agent.db next to the wallet file", "default": "claude-code" },
+    "wallet_file": { "type": "string", "title": "Wallet file", "description": "Empty: ~/.stellarpay/wallet.json, created by /toolport:setup", "default": "" },
+    "stellar_secret_key": { "type": "string", "title": "Stellar secret key (optional)", "description": "Testnet S... key; overrides the wallet file. Stored in secure storage", "sensitive": true },
+    "cli_path": { "type": "string", "title": "Toolport CLI path", "description": "Absolute path to packages/cli/bin/stellarpay.js when toolport is not on PATH", "default": "" }
+  },
+  "mcpServers": {
+    "toolport": {
+      "command": "node",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/toolport.mjs", "router"],
+      "env": {
+        "STELLAR_NETWORK": "stellar:testnet",
+        "TOOLPORT_OPT_GATEWAY_URL": "${user_config.gateway_url}",
+        "TOOLPORT_OPT_MAX_PER_CALL": "${user_config.max_per_call}",
+        "TOOLPORT_OPT_BUDGET": "${user_config.budget}",
+        "TOOLPORT_OPT_SESSION": "${user_config.session}",
+        "TOOLPORT_OPT_WALLET_FILE": "${user_config.wallet_file}",
+        "TOOLPORT_OPT_SECRET_KEY": "${user_config.stellar_secret_key}",
+        "TOOLPORT_OPT_CLI_PATH": "${user_config.cli_path}"
+      }
+    }
+  }
+}

@@ -165,6 +165,56 @@ Then ask: *"What's the best path to swap 100 XLM into USDC right now?"*
 
 To expose fixed paid servers directly instead of the router, use `connect`: `"args": ["connect", "--urls", "https://api.toolport.042067.xyz/v1/mcp/<serverId>", "--max-per-call", "0.05", "--budget", "1"]`.
 
+### Claude Code plugin and agent skill
+
+[`plugins/toolport`](plugins/toolport) is a Claude Code plugin: it runs `toolport router` as the MCP server `plugin:toolport:toolport` (tools `mcp__plugin_toolport_toolport__*`), adds the model-invoked `toolport` skill and the `/toolport:setup` command. The repo root is its marketplace, `toolport`. The plugin always runs the CLI on `stellar:testnet`, whatever `STELLAR_NETWORK` the shell has.
+
+From a checkout (after `npm ci`), the plugin finds the CLI in the checkout by itself:
+
+```bash
+claude plugin marketplace add ./
+claude plugin install toolport@toolport
+```
+
+From GitHub (needs access to the repo while it is private), then either `npm link -w packages/cli` in a checkout or set the `cli_path` option:
+
+```bash
+claude plugin marketplace add HackatonWinnners/toolport
+claude plugin install toolport@toolport
+```
+
+or, in Claude Code: `/plugin install toolport --marketplace HackatonWinnners/toolport`.
+
+Then run `/toolport:setup`: it checks the CLI and the wallet, offers to create and fund a testnet wallet at `~/.stellarpay/wallet.json`, and confirms the MCP server is connected. Change options with `claude plugin configure toolport` or `/plugin`:
+
+| Option | Default | Purpose |
+| --- | --- | --- |
+| `gateway_url` | `https://api.toolport.042067.xyz` | Toolport registry and paid MCP gateway |
+| `max_per_call` | `0.05` | Refuse any single call priced above this (USDC) |
+| `budget` | `1` | Persistent budget for the session name; spent and pending amounts never reset |
+| `session` | `claude-code` | Budget scope in `agent.db` next to the wallet file |
+| `wallet_file` | empty: `~/.stellarpay/wallet.json` | Wallet file path |
+| `stellar_secret_key` | unset | Optional testnet `S...` key; overrides the wallet file; kept in Claude Code's secure storage |
+| `cli_path` | empty | Absolute path to `packages/cli/bin/stellarpay.js` when `toolport` is not on PATH |
+
+The plugin looks for the CLI in this order: the `cli_path` option, then a `TOOLPORT_CLI` environment variable inherited from the shell that starts Claude Code (a path to `packages/cli/bin/stellarpay.js`), then the checkout the plugin sits in, then `toolport` on PATH (only a `toolport` that resolves to a checkout's `packages/cli/bin/stellarpay.js`, as `npm link -w packages/cli` creates).
+
+Environment from the shell: when `wallet_file` or `stellar_secret_key` is empty, an inherited `STELLARPAY_WALLET` or `STELLAR_SECRET_KEY` applies, and an inherited `STELLAR_SECRET_KEY` wins over the wallet file. An empty `gateway_url` falls back to an inherited `TOOLPORT_GATEWAY_URL`, then the CLI default. Inherited `STELLARPAY_MAX_PER_CALL`, `STELLARPAY_BUDGET` and `STELLAR_RPC_URL` are ignored: the caps come from the plugin options or the CLI defaults (0.05 and 1).
+
+**What stops spending.** `max_per_call` and `budget` bind the router tools: the router refuses any payment above them before it signs, in every permission mode. They do not fence the wallet itself: an agent with shell access can run `toolport call … --max-per-call <any>` against the same wallet, so keep in the wallet only what you are willing to spend. Claude Code's prompt before each `invoke_tool` call appears only in the default permission mode; in `auto` and `bypassPermissions` mode Claude pays without asking, up to the caps. If you use those modes, keep the caps low, or make every paid call ask by adding an `ask` rule to your settings (`~/.claude/settings.json` or the project's `.claude/settings.json`). Ask rules prompt in every mode, `auto` and `bypassPermissions` included; in a non-interactive `claude -p` run the call is refused instead:
+
+```json
+{
+  "permissions": {
+    "ask": ["mcp__plugin_toolport_toolport__invoke_tool"]
+  }
+}
+```
+
+The plugin never changes your settings.
+
+Other agents: copy [`plugins/toolport/skills/toolport/`](plugins/toolport/skills/toolport) (the `SKILL.md` plus `references/`) into the agent's skills directory, and configure `toolport router` as a stdio MCP server as in the Claude Desktop examples above.
+
 ### Router tools
 
 | Tool | Purpose |
@@ -304,6 +354,7 @@ sequenceDiagram
 | [`packages/mcp`](packages/mcp) | `createPaidMcpHandler` with `server.paidTool(...)` for providers; `StellarPayClient` with spend limits for agents |
 | [`packages/router`](packages/router) | Catalog adapters (registry, manifests), search, schema validation, unpaid quotes, durable runs and the discovery MCP |
 | [`packages/cli`](packages/cli) | `toolport` CLI (alias `stellarpay`): `router`, `connect`, `wallet create/show/buy-usdc`, `tools`, `call`, `budget` |
+| [`plugins/toolport`](plugins/toolport) | Claude Code plugin: `toolport router` as an MCP server through a dependency-free launcher, the `toolport` agent skill and `/toolport:setup` |
 | [`apps/gateway`](apps/gateway) | Hono gateway: paid MCP proxy at `/v1/mcp/:serverId` plus a REST API (wallet sign-in, registration, pricing, call log, stats), SQLite/libsql via Drizzle |
 | [`apps/web`](apps/web) | Next.js web app: landing, catalog, seller dashboard with Freighter sign-in, server pages with revenue and transaction links |
 | [`apps/demo-server`](apps/demo-server) | "Stellar Oracle" MCP server: `ping` (free), `account_summary` ($0.01), `dex_best_path` ($0.02, Horizon path finding) |

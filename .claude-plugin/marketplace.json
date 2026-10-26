@@ -1,0 +1,14 @@
+{
+  "name": "toolport",
+  "owner": { "name": "HackatonWinnners" },
+  "description": "Toolport plugins: pay-per-call MCP tools in USDC on Stellar",
+  "plugins": [
+    {
+      "name": "toolport",
+      "source": "./plugins/toolport",
+      "description": "Find paid MCP tools, see the price, pay per call in testnet USDC under a hard cap",
+      "category": "payments",
+      "tags": ["mcp", "x402", "stellar", "usdc"]
+    }
+  ]
+}
