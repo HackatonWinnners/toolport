@@ -13,12 +13,12 @@ Toolport is the Stellar counterpart of [MCPay](https://github.com/microchipgnu/M
 
 | | URL |
 | --- | --- |
-| Web app (landing, playground, catalog, seller dashboard) | `https://toolport.<domain>` |
-| Gateway API | `https://api.toolport.<domain>/api/health` |
-| Paid MCP endpoint (Stellar Oracle) | `https://api.toolport.<domain>/v1/mcp/<serverId>` |
-| Upstream demo server | `https://oracle.toolport.<domain>` |
+| Web app (landing, catalog, seller dashboard) | <https://toolport.042067.xyz> |
+| Gateway API | <https://api.toolport.042067.xyz/api/health> |
+| Paid MCP endpoint (Stellar Oracle) | `https://api.toolport.042067.xyz/v1/mcp/srv_f7fe3dbde1c9` |
+| Upstream demo server | <https://oracle.toolport.042067.xyz> |
 
-Placeholders: they get filled in after the Coolify deploy. The earlier Vercel deployment is listed under [Legacy: Vercel](#legacy-vercel).
+The earlier Vercel deployment is listed under [Legacy: Vercel](#legacy-vercel).
 
 ## Quickstart: local development
 
@@ -123,12 +123,12 @@ One MCP searches tools across the Toolport registry and curated JSON manifests. 
 # On testnet, the default is the hosted registry (or TOOLPORT_GATEWAY_URL). Use an existing funded testnet wallet.
 toolport router --max-per-call 0.05 --budget 1 --session hackmeridian
 # Point it at your own gateway:
-TOOLPORT_GATEWAY_URL=https://api.toolport.<domain> toolport router --max-per-call 0.05 --budget 1
+TOOLPORT_GATEWAY_URL=https://api.toolport.042067.xyz toolport router --max-per-call 0.05 --budget 1
 # Local development:
 toolport router --gateway http://localhost:4021 --allow-local
 ```
 
-The router's registry default is `--gateway`, then `TOOLPORT_GATEWAY_URL`, then the hosted testnet registry built into the CLI. Today that built-in registry is the legacy Vercel gateway.
+The router's registry default is `--gateway`, then `TOOLPORT_GATEWAY_URL`, then the hosted testnet registry built into the CLI, `https://api.toolport.042067.xyz`. Registry ids from the earlier Vercel gateway (`registry:srv_02148cae805b:*`) no longer resolve against it and return `Tool not found`; search again for current ids.
 
 ### Claude Desktop
 
@@ -140,7 +140,7 @@ Add the router to `claude_desktop_config.json`. If you ran `npm link -w packages
     "toolport": {
       "command": "toolport",
       "args": ["router", "--max-per-call", "0.05", "--budget", "1", "--session", "hackmeridian"],
-      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.<domain>" }
+      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.042067.xyz" }
     }
   }
 }
@@ -155,7 +155,7 @@ GUI apps often start without your shell PATH (for example under nvm). In that ca
       "command": "node",
       "args": ["/absolute/path/to/repo/packages/cli/bin/stellarpay.js", "router",
                "--max-per-call", "0.05", "--budget", "1", "--session", "hackmeridian"],
-      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.<domain>" }
+      "env": { "TOOLPORT_GATEWAY_URL": "https://api.toolport.042067.xyz" }
     }
   }
 }
@@ -163,7 +163,7 @@ GUI apps often start without your shell PATH (for example under nvm). In that ca
 
 Then ask: *"What's the best path to swap 100 XLM into USDC right now?"*
 
-To expose fixed paid servers directly instead of the router, use `connect`: `"args": ["connect", "--urls", "https://api.toolport.<domain>/v1/mcp/<serverId>", "--max-per-call", "0.05", "--budget", "1"]`.
+To expose fixed paid servers directly instead of the router, use `connect`: `"args": ["connect", "--urls", "https://api.toolport.042067.xyz/v1/mcp/<serverId>", "--max-per-call", "0.05", "--budget", "1"]`.
 
 ### Router tools
 
@@ -180,7 +180,7 @@ Example paid invocation:
 
 ```json
 {
-  "id": "registry:srv_02148cae805b:dex_best_path",
+  "id": "registry:srv_f7fe3dbde1c9:dex_best_path",
   "args": { "from": "XLM", "to": "USDC", "amount": "100" },
   "maxAmount": "0.05",
   "idempotencyKey": "my-swap-research-001"
@@ -240,9 +240,9 @@ The main deploy target is a self-hosted [Coolify](https://coolify.io) instance u
 
 | Service | Domain (Coolify syntax) |
 | --- | --- |
-| `web` | `https://toolport.<domain>:3000` |
-| `gateway` | `https://api.toolport.<domain>:4021` |
-| `demo-server` | `https://oracle.toolport.<domain>:4022` |
+| `web` | `https://toolport.042067.xyz:3000` |
+| `gateway` | `https://api.toolport.042067.xyz:4021` |
+| `demo-server` | `https://oracle.toolport.042067.xyz:4022` |
 
 The full steps are in **[docs/deploy/coolify.md](docs/deploy/coolify.md)**. They cover env values, web build variables, health checks, seeding with `scripts/seed-gateway.ts`, the hairpin-NAT fallback, and why `ALLOW_PRIVATE_UPSTREAMS` must stay `false` on a shared host.
 
@@ -371,7 +371,7 @@ The gateway test runs a real upstream MCP server behind a real gateway. It cover
 
 ## Legacy: Vercel
 
-Before the move to Coolify, Toolport (then StellarPay) ran as three Vercel projects. That deployment is still up, the CLI's router still uses its gateway as the default registry, and the Coolify guide uses its demo server as the hairpin-NAT fallback:
+Before the move to Coolify, Toolport (then StellarPay) ran as three Vercel projects. That deployment is still up, and the Coolify guide uses its demo server as the hairpin-NAT fallback:
 
 | | URL |
 | --- | --- |

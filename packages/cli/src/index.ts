@@ -17,6 +17,7 @@ import {
 } from "@stellarpay/core";
 import { PaymentRefusedError, StellarPayClient } from "@stellarpay/mcp/client";
 import { runBridge } from "./bridge.js";
+import { routerGatewayUrl } from "./defaults.js";
 import { mkdir } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -50,7 +51,7 @@ Options:
   --session <name>       Resume this wallet/network budget (default default)
   --state-db <path>      Local state database (default next to wallet.json)
   --gateway <url>        Toolport registry for router discovery
-                         (default: TOOLPORT_GATEWAY_URL, else the hosted testnet registry)
+                         (default: TOOLPORT_GATEWAY_URL, else https://api.toolport.042067.xyz on testnet)
   --manifest <path>      Curated JSON tools; pubnet examples: catalog/mpprouter.mainnet.json
   --allow-local         Allow loopback providers for local development
 `;
@@ -247,7 +248,7 @@ async function main() {
       const secretKey = await resolveSecret(values.secret);
       return runRouter({ secretKey, network: network(), rpcUrl: values["rpc-url"] ?? process.env.STELLAR_RPC_URL,
         store: await agentStore(secretKey),
-        ...limits(), gatewayUrl: values.gateway ?? (process.env.TOOLPORT_GATEWAY_URL || undefined) ?? (network() === DEFAULT_NETWORK ? "https://stellarpay-gateway-ten.vercel.app" : undefined),
+        ...limits(), gatewayUrl: routerGatewayUrl(values.gateway, process.env.TOOLPORT_GATEWAY_URL, network()),
         manifestPath: values.manifest,
         allowLoopback: values["allow-local"],
       });

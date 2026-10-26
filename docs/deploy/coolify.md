@@ -5,7 +5,7 @@ Toolport runs as three containers from one `Dockerfile` (targets `web`, `gateway
 
 | Service | Target | Port | What it is |
 |---|---|---|---|
-| `web` | `web` | 3000 | Next.js standalone server (landing, playground, catalog, seller pages) |
+| `web` | `web` | 3000 | Next.js standalone server (landing, catalog, seller pages) |
 | `gateway` | `gateway` | 4021 | Paid MCP gateway and API. SQLite on the `gateway-data` volume (`/data`) |
 | `demo-server` | `demo` | 4022 | Stellar Oracle, a free upstream MCP server that the gateway prices |
 
@@ -25,9 +25,9 @@ container port:
 
 | Service | Domain |
 |---|---|
-| `web` | `https://toolport.<domain>:3000` |
-| `gateway` | `https://api.toolport.<domain>:4021` |
-| `demo-server` | `https://oracle.toolport.<domain>:4022` |
+| `web` | `https://toolport.042067.xyz:3000` |
+| `gateway` | `https://api.toolport.042067.xyz:4021` |
+| `demo-server` | `https://oracle.toolport.042067.xyz:4022` |
 
 Point the three DNS records at the Coolify host before deploying, so the certificates can be issued.
 
@@ -39,8 +39,8 @@ Coolify lists every `${VAR}` from the compose file. Set these and leave the rest
 
 | Variable | Value |
 |---|---|
-| `PUBLIC_URL` | `https://api.toolport.<domain>` |
-| `WEB_ORIGIN` | `https://toolport.<domain>` (comma list if there are several web origins) |
+| `PUBLIC_URL` | `https://api.toolport.042067.xyz` |
+| `WEB_ORIGIN` | `https://toolport.042067.xyz` (comma list if there are several web origins) |
 | `DATABASE_URL` | `file:/data/toolport.db` (the default; the `gateway-data` volume keeps it) |
 | `STELLAR_NETWORK` | `stellar:testnet` |
 | `SESSION_SECRET` | secret, `openssl rand -hex 32`. Without it, sessions reset on every restart |
@@ -62,7 +62,7 @@ them as **build variables** in Coolify and redeploy (rebuild) after changing the
 
 | Variable | Value |
 |---|---|
-| `NEXT_PUBLIC_GATEWAY_URL` | `https://api.toolport.<domain>` |
+| `NEXT_PUBLIC_GATEWAY_URL` | `https://api.toolport.042067.xyz` |
 | `NEXT_PUBLIC_STELLAR_NETWORK` | `stellar:testnet` |
 | `NEXT_PUBLIC_DOCS_URL` | docs link shown in the UI (optional) |
 | `NEXT_PUBLIC_REPO_URL` | repository link shown in the UI (optional) |
@@ -81,9 +81,9 @@ Deploy, then wait for all three services to report healthy. The health checks ar
 - demo-server: `GET /` returns 200
 
 ```sh
-curl -s https://api.toolport.<domain>/api/health
-curl -s https://oracle.toolport.<domain>/
-curl -sI https://toolport.<domain>/
+curl -s https://api.toolport.042067.xyz/api/health
+curl -s https://oracle.toolport.042067.xyz/
+curl -sI https://toolport.042067.xyz/
 ```
 
 ## 5. Seed the gateway
@@ -93,10 +93,10 @@ gateway volume keeps it across deploys; the script is idempotent):
 
 ```sh
 STELLARPAY_WALLET=.wallets/provider.json npx tsx scripts/seed-gateway.ts \
-  https://api.toolport.<domain> https://oracle.toolport.<domain>/mcp
+  https://api.toolport.042067.xyz https://oracle.toolport.042067.xyz/mcp
 ```
 
-It prints the paid MCP URL. The playground should then list Stellar Oracle.
+It prints the paid MCP URL. The catalog at `/catalog` should then list Stellar Oracle.
 
 ### Hairpin-NAT fallback
 
@@ -107,7 +107,7 @@ of the demo server as the upstream instead:
 
 ```sh
 STELLARPAY_WALLET=.wallets/provider.json npx tsx scripts/seed-gateway.ts \
-  https://api.toolport.<domain> https://stellarpay-demo.vercel.app/mcp
+  https://api.toolport.042067.xyz https://stellarpay-demo.vercel.app/mcp
 ```
 
 ### Why `ALLOW_PRIVATE_UPSTREAMS` stays `false`
