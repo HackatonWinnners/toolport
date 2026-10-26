@@ -224,29 +224,55 @@ function Workflow() {
 }
 
 function Team() {
-  const team = [
-    ["holeesheet", "Payments core, MCP SDK, gateway, CLI and web app"],
-    ["Anastasiia", "Security hardening, budget holds, design"],
-    ["madvil2", "Discovery router, durable payments, ecosystem research"],
+  const team: { name: string; role: string; built: string; link?: string; handle: string }[] = [
+    {
+      name: "holeesheet",
+      role: "Backend engineer · Go",
+      built: "Payments core and the x402 MCP SDK, the gateway, the CLI and the router's paid calls.",
+      handle: "GitHub: holeesheet",
+    },
+    {
+      name: "madvil2",
+      role: "Engineer",
+      built: "Discovery router, durable payments and budget holds, ecosystem research and the MPP Router catalog.",
+      link: "https://www.linkedin.com/in/kokaimov",
+      handle: "LinkedIn: kokaimov",
+    },
+    {
+      name: "Nastya",
+      role: "UI/UX designer",
+      built: "The Toolport brand, logo and motion, the site, the catalog and this deck.",
+      handle: "Design",
+    },
   ];
   return (
     <Frame
       step={13}
       title="The team"
-      lead="Three builders who shipped it end to end."
+      lead="Three people who built Toolport end to end in one hackathon."
       aside={
         <ul className="space-y-3">
-          {team.map(([name, role]) => (
-            <li key={name} className="flex items-center gap-4 rounded-2xl border border-line bg-panel p-4">
+          {team.map((m) => (
+            <li key={m.name} className="flex gap-4 rounded-2xl border border-line bg-panel p-5">
               <span
                 aria-hidden="true"
                 className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-selected text-lg font-semibold uppercase"
               >
-                {name[0]}
+                {m.name[0]}
               </span>
-              <span>
-                <span className="block font-semibold">{name}</span>
-                <span className="block text-sm text-muted">{role}</span>
+              <span className="min-w-0">
+                <span className="flex flex-wrap items-baseline gap-x-3">
+                  <span className="font-semibold">{m.name}</span>
+                  <span className="font-mono text-xs text-good">{m.role}</span>
+                </span>
+                <span className="mt-1 block text-sm leading-snug text-fg-soft">{m.built}</span>
+                {m.link ? (
+                  <a href={m.link} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs text-accent hover:text-fg">
+                    {m.handle} ↗
+                  </a>
+                ) : (
+                  <span className="mt-2 block text-xs text-muted">{m.handle}</span>
+                )}
               </span>
             </li>
           ))}
@@ -255,8 +281,9 @@ function Team() {
     >
       <Points
         items={[
-          "Payments and protocol: x402 on Stellar, from the SDK to the gateway.",
-          "Product and safety: budgets that hold across restarts, refusals before signing.",
+          "Backend: payments and protocol, x402 on Stellar from the SDK to the gateway.",
+          "Product: budgets that hold across restarts, refusals before signing, a catalog of 448 paid APIs.",
+          "Design: one visual language across the site, the catalog, the loaders and the pitch.",
           "Open by design: any MCP server can list, built on open standards.",
         ]}
       />
